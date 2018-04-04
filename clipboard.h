@@ -1,6 +1,7 @@
 #ifndef CLIPBOARD_HEADER
 #define CLIPBOARD_HEADER
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
