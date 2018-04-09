@@ -10,6 +10,9 @@ default: main
 main: main.c clipboard.c
 	$(CC) main.c clipboard.c $(CFLAGS) -o $(BINARY)
 
+release: main.c clipboard.c
+	$(CC) main.c clipboard.c $(CFLAGS_RELEASE) -o $(BINARY)
+
 clean:
 	-@rm bin/$(BINARY)*
 

@@ -1,5 +1,14 @@
 #include "clipboard.h"
 
+clipboard *new_clipboard() {
+    int_fast32_t = 0;
+    clipboard *nouveau = (clipboard *)malloc(sizeof(clipboard));
+    nouveau->count = 0;
+    nouveau->head = NULL;
+    nouveau->tail = NULL;
+    return nouveau;
+}
+
 int clipboard_connect(char *clipboard_dir) {
     if (true) {
         return -1; // Error opening clipboard
