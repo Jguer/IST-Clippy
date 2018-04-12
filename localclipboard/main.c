@@ -1,5 +1,4 @@
 #include "../utils/log.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -76,14 +75,15 @@ int main(int argc, const char *argv[]) {
 
     pthread_exit(NULL);
 }
-void *remote_connection(void *args) {
+
+void *remote_handler(void *args) {
     int serverSocket;
     int clientSocket;
     pthread_t worker_thread;
     struct addrinfo hints, *res, *p;
     struct sockaddr_storage *clientAddr;
     socklen_t sinSize = sizeof(struct sockaddr_storage);
-    struct workerArgs *wa;
+    int *wa;
     int yes = 1;
 
     memset(&hints, 0, sizeof hints);
@@ -147,17 +147,8 @@ void *remote_connection(void *args) {
             continue;
         }
 
-        /* We're now connected to a client. We're going to spawn a "worker thread"
-           to handle that connection. That way, the server thread can continue
-           running, accept more connections, and spawn more threads to handle them.
-           The worker thread needs to know what socket it must use to communicate
-           with the client, so we'll pass the clientSocket as a parameter to the
-           thread. Although we could arguably just pass a pointer to clientSocket,
-           it is good practice to use a struct that encapsulates the parameters to
-           the thread (even if there is only one parameter). In this case, this is
-           done with the workerArgs struct. */
-        wa = malloc(sizeof(struct workerArgs));
-        wa->socket = clientSocket;
+        wa = malloc(sizeof(int));
+        wa = clientSocket;
 
         if (pthread_create(&worker_thread, NULL, service_single_client, wa) != 0) {
             perror("Could not create a worker thread");
@@ -172,32 +163,35 @@ void *remote_connection(void *args) {
     pthread_exit(NULL);
 }
 
-/* Handle connection from each local client */
-void *connection_handler(void *socket_desc) {
-    // Get the socket descriptor
-    int sock = *(int *)socket_desc;
-    int read_size;
-    char *message, client_message[MESSAGE_SIZE];
+void *remote_connection(void *args) {
+    struct workerArgs *wa;
+    int socket, nbytes;
+    char tosend[100];
 
-    // Receive a message from client
-    while ((read_size = recv(sock, client_message, MESSAGE_SIZE, 0)) > 0) {
-        // end of string marker
-        client_message[read_size] = '\0';
-        log_info("Sock: %d Message:%s", sock, client_message);
+    /* Unpack the arguments */
+    socket = (struct workerArgs *)wa->socket;
 
-        // Send the message back to client
-        write(sock, client_message, strlen(MESSAGE_SIZE));
+    pthread_detach(pthread_self());
 
-        // clear the message buffer
-        memset(client_message, 0, MESSAGE_SIZE);
+    fprintf(stderr, "Socket %d connected\n", socket);
+
+    while (1) {
+        sprintf(tosend, "%d -- Hello, socket!\n", (int)time(NULL));
+
+        nbytes = send(socket, tosend, strlen(tosend), 0);
+
+        if (nbytes == -1 && (errno == ECONNRESET || errno == EPIPE)) {
+            fprintf(stderr, "Socket %d disconnected\n", socket);
+            close(socket);
+            free(wa);
+            pthread_exit(NULL);
+        } else if (nbytes == -1) {
+            perror("Unexpected error in send()");
+            free(wa);
+            pthread_exit(NULL);
+        }
+        sleep(5);
     }
 
-    if (read_size == 0) {
-        close(sock);
-        log_info("Client disconnected");
-    } else if (read_size == -1) {
-        log_error("Recv Failed %s", strerror(errno));
-    }
-
-    return 0;
+    pthread_exit(NULL);
 }
