@@ -1,6 +1,6 @@
 #### PROJECT SETTINGS ####
 # The name of the executable to be created
-BIN_NAME := clippy
+BIN_NAME := app
 # Compiler used
 CC ?= gcc
 # Extension of source files used in the project
@@ -25,7 +25,7 @@ RLINK_FLAGS =
 # Additional debug-specific linker settings
 DLINK_FLAGS =
 # Destination directory, like a jail or mounted system
-DESTDIR = /
+DESTDIR = .
 # Install path (bin/ is appended automatically)
 INSTALL_PREFIX = usr/local
 #### END PROJECT SETTINGS ####
@@ -77,9 +77,9 @@ install: export BIN_PATH := bin/release
 # Find all source files in the source directory, sorted by most
 # recently modified
 ifeq ($(UNAME_S),Darwin)
-	SOURCES = $(shell find $(SRC_PATH) -name '*.$(SRC_EXT)' | sort -k 1nr | cut -f2-)
+	SOURCES = $(shell find -L $(SRC_PATH) -name '*.$(SRC_EXT)' | sort -k 1nr | cut -f2-)
 else
-	SOURCES = $(shell find $(SRC_PATH) -name '*.$(SRC_EXT)' -printf '%T@\t%p\n' \
+	SOURCES = $(shell find -L $(SRC_PATH) -name '*.$(SRC_EXT)' -printf '%T@\t%p\n' \
 						| sort -k 1nr | cut -f2-)
 endif
 
@@ -116,7 +116,7 @@ endif
 
 # Version macros
 # Comment/remove this section to remove versioning
-USE_VERSION := false
+USE_VERSION := true
 # If this isn't a git repo or the repo has no tags, git describe will return non-zero
 ifeq ($(shell git describe > /dev/null 2>&1 ; echo $$?), 0)
 	USE_VERSION := true
