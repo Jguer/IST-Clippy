@@ -1,21 +1,26 @@
 #ifndef CLIPBOARD_HEADER
 #define CLIPBOARD_HEADER
 
+#include "../utils/defs.h"
+#include "../utils/log.h"
+
+#include <errno.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <unistd.h>
 
-#define STRING_SIZE 256
+enum op { COPY, PASTE };
 
-typedef struct element_t {
-    char string[256];
-} element;
-
-typedef struct clipboard_t {
-    element head[10];
-    uint_fast32_t count;
-} clipboard;
+typedef struct header {
+    enum op op;
+    int region;
+    int data_size;
+} header_t;
 
 int clipboard_connect(char *clipboard_dir);
 int clipboard_copy(int clipboard_id, int region, void *buf, size_t count);
