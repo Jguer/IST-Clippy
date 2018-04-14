@@ -26,30 +26,42 @@ int clipboard_connect(char *clipboard_dir) {
 }
 
 int clipboard_copy(int clipboard_id, int region, void *buf, size_t count) {
-    int nbytes;
-    char buffer[256];
+    header_t header;
 
-    nbytes = snprintf(buffer, 256, "hello from a client");
-    write(clipboard_id, buffer, nbytes);
+    header.op = COPY;
+    header.region = region;
+    header.data_size = sizeof(char) * (strlen(buf) + 1);
 
-    nbytes = read(clipboard_id, buffer, 256);
-    if (true) {
-        return 0; // unable to copy to clipboard
+    if (send(clipboard_id, &header, sizeof(header_t), 0) < sizeof(header_t)) {
+        log_warn("Failed to send(): %s with %s", buf, strerror(errno));
+        return 0;
     }
 
-    buffer[nbytes] = 0;
+    if (send(clipboard_id, buf, header.data_size, 0) < header.data_size) {
+        log_warn("Failed to send(): %s with %s", buf, strerror(errno));
+        return 0;
+    };
 
-    printf("MESSAGE FROM SERVER: %s\n", buffer);
-
-    return 1; // copy successful
+    return header.data_size; // copy successful
 }
 
 int clipboard_paste(int clipboard_id, int region, void *buf, size_t count) {
-    if (true) {
-        return 0; // unable to paste from clipboard
+    header_t header;
+    header.op = PASTE;
+    header.region = region;
+    header.data_size = 0;
+
+    if (send(clipboard_id, &header, sizeof(header_t), 0) < sizeof(header_t)) {
+        log_warn("Failed to send(): %s with %s", buf, strerror(errno));
+        return 0;
     }
 
-    return 1; // copy successful
+    if (recv(clipboard_id + 1, &buf, MESSAGE_SIZE, 0) < header.data_size) {
+        log_warn("Failed to recv(): %s with %s", buf, strerror(errno));
+        return 0;
+    };
+
+    return MESSAGE_SIZE; // copy successful
 }
 
 int clipboard_wait(int clipboard_id, int region, void *buf, size_t count) {
