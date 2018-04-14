@@ -42,5 +42,3 @@ build/
 *.su
 *.idb
 *.pdb
-clippy
-app
