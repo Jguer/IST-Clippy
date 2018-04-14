@@ -30,7 +30,7 @@ int clipboard_copy(int clipboard_id, int region, void *buf, size_t count) {
 
     header.op = COPY;
     header.region = region;
-    header.data_size = sizeof(char) * (strlen(buf) + 1);
+    header.data_size = count;
 
     if (send(clipboard_id, &header, sizeof(header_t), 0) < sizeof(header_t)) {
         log_warn("Failed to send(): %s with %s", buf, strerror(errno));
@@ -49,7 +49,7 @@ int clipboard_paste(int clipboard_id, int region, void *buf, size_t count) {
     header_t header;
     header.op = PASTE;
     header.region = region;
-    header.data_size = 0;
+    header.data_size = count;
 
     if (send(clipboard_id, &header, sizeof(header_t), 0) < sizeof(header_t)) {
         log_warn("Failed to send(): %s with %s", buf, strerror(errno));
@@ -65,11 +65,23 @@ int clipboard_paste(int clipboard_id, int region, void *buf, size_t count) {
 }
 
 int clipboard_wait(int clipboard_id, int region, void *buf, size_t count) {
-    if (true) {
-        return 0; // unable to paste from clipboard
+    header_t header;
+
+    header.op = WAIT;
+    header.region = region;
+    header.data_size = count;
+
+    if (send(clipboard_id, &header, sizeof(header_t), 0) < sizeof(header_t)) {
+        log_warn("Failed to send(): %s with %s", buf, strerror(errno));
+        return 0;
     }
 
-    return 1; // copy successful
+    if (recv(clipboard_id + 1, &buf, MESSAGE_SIZE, 0) < header.data_size) {
+        log_warn("Failed to recv(): %s with %s", buf, strerror(errno));
+        return 0;
+    };
+
+    return header.data_size; // copy successful
 }
 
 void clipboard_close(int clipboard_id) {

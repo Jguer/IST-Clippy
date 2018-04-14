@@ -14,13 +14,15 @@
 #include <sys/un.h>
 #include <unistd.h>
 
-enum op { COPY, PASTE };
+enum op { COPY, PASTE, WAIT };
 
+#pragma pack(1) // this helps to avoid serialization while sending over network.
 typedef struct header {
     enum op op;
     int region;
     int data_size;
 } header_t;
+#pragma pack(0) // turn packing off
 
 int clipboard_connect(char *clipboard_dir);
 int clipboard_copy(int clipboard_id, int region, void *buf, size_t count);
