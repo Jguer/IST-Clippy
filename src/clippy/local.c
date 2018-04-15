@@ -4,37 +4,46 @@ void *accept_local_client(void *args) {
     // Get the socket descriptor
     int sock = *(int *)args;
     int read_size;
-    char client_message[MESSAGE_SIZE * 4];
-    header_t got_header;
+    char *buf;
+    header_t header;
     long int timestamp;
 
     // Receive a message from client
-    while ((read_size = recv(sock, &got_header, MESSAGE_SIZE, 0)) > 0) {
+    while ((read_size = recv(sock, &header, sizeof(header_t), 0)) > 0) {
         if (read_size != sizeof(header_t)) {
-            log_error("Header unset");
+            log_error("Header unset - read_size: %d, expected: %d", read_size,
+                      sizeof(header_t));
             continue;
         }
         timestamp = time(NULL);
 
-        if (got_header.op == COPY) {
-            log_info("Got COPY, waiting for message");
-            char *buf = malloc(sizeof(char) * got_header.data_size);
-            while ((read_size = recv(sock, client_message, MESSAGE_SIZE, 0)) <
-                    got_header.data_size - 1) {
-                buf = strncpy(buf + strlen(buf), client_message, read_size);
-            }
-            buf[got_header.data_size] = '\0';
-            if (put_message(got_header.region, timestamp, buf,
-                            got_header.data_size) == -1) {
-                log_error("Failed to put message in storage");
-            }
-        } else if (got_header.op == PASTE) {
-            element_t *data = get_message(got_header.region);
-            write(sock, data->buf, data->len);
-        }
+        log_info("HEADER Received OP: %d Region: %d Data_size: %d", header.op,
+                 header.region, header.data_size);
 
-        // clear the message buffer
-        memset(client_message, 0, MESSAGE_SIZE);
+        if (header.op == COPY) {
+            log_info("Got COPY, waiting for message");
+            buf = (char *)malloc(sizeof(char) * header.data_size);
+            buf[0] = '\0';
+
+            read_size = recv(sock, buf, header.data_size, 0);
+            if (read_size < header.data_size) {
+                log_error("Received shorter message than expected");
+            }
+            buf[header.data_size] = '\0';
+            log_info("Received Message: %s", buf);
+
+            if (put_message(header.region, timestamp, buf, header.data_size) == -1) {
+                log_error("Failed to put message in storage");
+                free(buf);
+            }
+        } else if (header.op == PASTE) {
+            element_t *data = get_message(header.region);
+            size_t data_size = data->len;
+            if (data_size > header.data_size) {
+                data_size = header.data_size;
+            }
+            write(sock, data->buf, data_size);
+        }
     }
 
     if (read_size == 0) {

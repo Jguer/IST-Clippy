@@ -11,7 +11,7 @@ SRC_PATH = .
 LIBS =
 # General compiler flags
 #COMPILE_FLAGS = -march=native -std=gnu11 -Wall -Wextra -Werror -g -Wpedantic -Wshadow -Wstrict-overflow -fno-strict-aliasing
-COMPILE_FLAGS = -march=native -std=gnu11 -pthread
+COMPILE_FLAGS = -march=native -std=gnu11 -pthread -DLOG_USE_COLOR
 # Additional release-specific flags
 RCOMPILE_FLAGS = -D NDEBUG
 # Additional debug-specific flags
