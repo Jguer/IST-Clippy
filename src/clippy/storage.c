@@ -38,6 +38,7 @@ int put_message(int region, long int timestamp, char *buf, int len) {
         log_info("Stored new");
     }
     pthread_mutex_unlock(&m[region]); // end of Critical Section
+    return 0;
 }
 
 element_t *get_message(int region) {
@@ -45,9 +46,5 @@ element_t *get_message(int region) {
         log_error("Naughty tried to get message in excess position");
         return NULL;
     }
-
-    pthread_mutex_lock(&m[region]); // start of Critical Section
     return msg_store->elements[region];
-
-    pthread_mutex_unlock(&m[region]); // end of Critical Section
 }
