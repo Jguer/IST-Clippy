@@ -1,9 +1,5 @@
 #include "storage.h"
 
-#define MAX_ELEMENTS 10
-
-pthread_mutex_t m[MAX_ELEMENTS] = {PTHREAD_MUTEX_INITIALIZER};
-
 storage_t *new_storage() {
     storage_t *nouveau = (storage_t *)malloc(sizeof(storage_t));
     if (nouveau == NULL) {
@@ -43,7 +39,8 @@ int put_message(int region, long int timestamp, char *buf, int len) {
         log_trace("New Element[%d] Value=\"%s\"", region,
                   msg_store->elements[region]->buf);
     }
-    pthread_mutex_unlock(&m[region]); // end of Critical Section
+    pthread_cond_signal(&c[region]);
+    pthread_mutex_unlock(&m[region]);
 
     if (free_f) {
         free(to_free);

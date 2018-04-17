@@ -1,6 +1,5 @@
 #include "local.h"
 #include "remote.h"
-#include "storage.h"
 /* Standard Libraries */
 
 #define N_ARGS 4
@@ -30,6 +29,11 @@ int main(int argc, const char *argv[]) {
     pthread_t local_thread;
     char *wa = NULL;
     msg_store = new_storage();
+
+    for (int i = 0; i < MAX_ELEMENTS; i++) {
+        pthread_mutex_init(&m[i], NULL);
+        pthread_cond_init(&c[i], NULL);
+    }
 
     sigset_t new;
     sigemptyset(&new);
