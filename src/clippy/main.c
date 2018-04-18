@@ -1,7 +1,4 @@
-#include "local.h"
-#include "remote.h"
-/* Standard Libraries */
-#include "utils/list.h"
+#include "comms.h"
 
 #define N_ARGS 4
 
@@ -33,7 +30,9 @@ int main(int argc, const char *argv[]) {
     char *wa = NULL;
     msg_store = new_storage();
 
-    /* pthread_mutex_init(&remote_connections_mutex, NULL); */
+    pthread_mutex_init(&remote_connections_mutex, NULL);
+    pthread_mutex_init(&local_connections_mutex, NULL);
+
     for (int i = 0; i < MAX_ELEMENTS; i++) {
         pthread_mutex_init(&m[i], NULL);
         pthread_cond_init(&c[i], NULL);
@@ -47,9 +46,8 @@ int main(int argc, const char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    log_info("IP: %s PORT: %d", ip, portno);
-
     if (connect_remote) {
+        log_info("IP: %s PORT: %d", ip, portno);
         wa = malloc(sizeof(char) * strlen(portno));
         wa = strncpy(wa, portno, strlen(portno));
     }
@@ -68,8 +66,8 @@ int main(int argc, const char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    /* pthread_join(remote_thread, NULL); */
     pthread_join(local_thread, NULL);
+    pthread_join(remote_thread, NULL);
 
     pthread_exit(NULL);
 }

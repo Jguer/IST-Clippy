@@ -12,6 +12,7 @@
 #include <time.h>
 
 #define MAX_ELEMENTS 10
+#define MAX_MESSAGE_SIZE 4096
 
 typedef struct element {
     char *buf;
@@ -31,8 +32,10 @@ pthread_mutex_t m[MAX_ELEMENTS];
 pthread_cond_t c[MAX_ELEMENTS];
 
 pthread_mutex_t remote_connections_mutex;
+pthread_mutex_t local_connections_mutex;
 
 list(int, remote_connections);
+list(int, local_connections);
 
 storage_t *msg_store;
 storage_t *new_storage();
