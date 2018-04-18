@@ -2,10 +2,6 @@
 
 #define N_ARGS 4
 
-char const *portno;
-char const *ip;
-bool connect_remote;
-
 void usage(const char *name) { //_Verbose_OPT_* are debug only variables
     fprintf(stdout, "Example Usage: %s -c [ip] [port]\n", name);
     fprintf(stdout, "Arguments:\n"
@@ -16,9 +12,9 @@ void usage(const char *name) { //_Verbose_OPT_* are debug only variables
 int main(int argc, const char *argv[]) {
     if (argc > 3) {
         if (strcmp(argv[1], "-c") == 0) {
-            connect_remote = true;
             ip = argv[2];
             portno = argv[3];
+            log_info("IP: %s PORT: %d", ip, portno);
         } else if (strcmp(argv[1], "-h") == 0) {
             usage(argv[0]);
             return EXIT_FAILURE;
@@ -46,17 +42,7 @@ int main(int argc, const char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    if (connect_remote) {
-        log_info("IP: %s PORT: %d", ip, portno);
-        wa = malloc(sizeof(char) * strlen(portno));
-        wa = strncpy(wa, portno, strlen(portno));
-    }
-
-    if (pthread_create(&remote_thread, NULL, remote_connection, wa) < 0) {
-        if (connect_remote) {
-            free(wa);
-        }
-
+    if (pthread_create(&remote_thread, NULL, remote_connection, NULL) < 0) {
         log_error("Unable to create remote thread");
         exit(EXIT_FAILURE);
     }

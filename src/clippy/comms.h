@@ -28,6 +28,9 @@
 
 #define SOCK_PATH "/tmp/CLIPBOARD_SOCKET"
 
+char const *portno;
+char const *ip;
+
 void *accept_local_client(void *);
 void *local_connection(void *);
 void *accept_remote_client(void *);

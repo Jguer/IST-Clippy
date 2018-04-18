@@ -11,7 +11,7 @@ void *accept_client(void *args) {
     wa_t *wa = (wa_t *)args;
 
     pthread_detach(pthread_self());
-    log_debug("Socket %d connected", wa->fd);
+    log_debug("socket %d connected", wa->fd);
 
     header_t header;
     long int timestamp;
@@ -19,10 +19,10 @@ void *accept_client(void *args) {
     while (true) {
         nbytes = recv(wa->fd, &header, sizeof(header_t), 0);
         if (nbytes == 0) {
-            log_debug("sd: %d socket disconnected", wa->fd);
+            log_debug("sd:%d socket disconnected", wa->fd);
             break;
         } else if (nbytes == -1) {
-            log_error("sd: %d unexpected error in recv(): %s", strerror(errno),
+            log_error("sd:%d unexpected error in recv(): %s", strerror(errno),
                       wa->fd);
             break;
         } else if (nbytes != sizeof(header_t)) {
@@ -33,24 +33,23 @@ void *accept_client(void *args) {
 
         timestamp = time(NULL);
 
-        log_debug("sd: %d HEADER Received OP: %d Region: %d Data_size: %d",
+        log_debug("sd:%d HEADER Received OP: %d Region: %d Data_size: %d",
                   header.op, header.region, header.data_size, wa->fd);
 
         if (header.op == COPY) {
             if (header.data_size > MAX_MESSAGE_SIZE) {
                 log_error(
-                    "sd: %d Your message exceeds MAX_MESSAGE_SIZE. This incident will "
+                    "sd:%d Your message exceeds MAX_MESSAGE_SIZE. This incident will "
                     "be reported",
                     wa->fd);
             }
 
             nbytes = recv(wa->fd, buf, header.data_size, 0);
             if (nbytes < header.data_size) {
-                log_error("sd: %d Received shorter message than expected", wa->fd);
+                log_error("sd:%d Received shorter message than expected", wa->fd);
             }
 
             buf[header.data_size] = '\0';
-            log_debug("Received Message: %s", buf);
 
             if (put_message(header.region, timestamp, buf, header.data_size) == -1) {
                 log_error("Failed to put message in storage");
@@ -151,10 +150,64 @@ int create_remote_socket() {
     return server_socket;
 }
 
+int establish_sync() {
+    int sockfd = -1, rc, i, port, nBytes;
+    struct sockaddr_in localAddr, servAddr;
+    struct hostent *h;
+    port = atoi(portno);
+    if (port <= 0 || port > 65535) // check number of TCP server port
+    {
+        log_error("The port number given is wrong");
+        return -1;
+    }
+
+    h = gethostbyname(ip);
+    if (h == NULL) // check assigment of TCP server host
+    {
+        log_error("unknown host");
+        return -1;
+    }
+
+    /* Create TCP socket */
+    servAddr.sin_family = h->h_addrtype;
+    memcpy((char *)&servAddr.sin_addr.s_addr, h->h_addr_list[0], h->h_length);
+    servAddr.sin_port = htons(port);
+
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (sockfd < 0) // check TCP socket is created correctly
+    {
+        perror("Cannot open socket ");
+        return -1;
+    }
+
+    /* Bind any port number */
+
+    localAddr.sin_family = AF_INET;
+    localAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    localAddr.sin_port = htons(0);
+
+    rc = bind(sockfd, (struct sockaddr *)&localAddr, sizeof(localAddr));
+    if (rc < 0) // check TCP socket is bind correctly
+    {
+        perror("Cannot bind on TCP port ");
+        close(sockfd);
+        return -1;
+    }
+
+    rc = connect(sockfd, (struct sockaddr *)&servAddr, sizeof(servAddr));
+    if (rc < 0) // check TCP socket is connected correctly
+    {
+        perror("Cannot connect ");
+        close(sockfd);
+        return -1;
+    }
+
+    return sockfd;
+}
+
 void *remote_connection(void *args) {
     pthread_t worker_thread;
     struct sockaddr_in client_address;
-    /* int portno = atoi((char *)args); */
     int client_socket;
     int client_len;
     fd_set readfds, testfds;
@@ -169,13 +222,18 @@ void *remote_connection(void *args) {
     FD_SET(server_socket, &readfds);
     /* Loop and wait for connections */
     while (true) {
-        int fd;
+        FD_ZERO(&readfds);
+        FD_SET(server_socket, &readfds);
 
+        int fd;
         int max_fd = server_socket;
         pthread_mutex_lock(&remote_connections_mutex);
         list_each_elem(remote_connections, elem) {
-            if (*elem > max_fd) {
+            if (*elem > 0) {
                 FD_SET(*elem, &readfds);
+            }
+            if (*elem > max_fd) {
+                max_fd = *elem;
             }
         }
         pthread_mutex_unlock(&remote_connections_mutex);
@@ -205,7 +263,6 @@ void *remote_connection(void *args) {
                     list_push(remote_connections, client_socket);
                     pthread_mutex_unlock(&remote_connections_mutex);
 
-                    log_trace("add client %d to remote_connections", client_socket);
                     wa_t *wa = (wa_t *)malloc(sizeof(wa_t));
                     wa->fd = client_socket;
                     wa->remote = true;
@@ -218,6 +275,7 @@ void *remote_connection(void *args) {
         }
     }
 
+    close(server_socket);
     pthread_exit(NULL);
 }
 
@@ -272,7 +330,6 @@ void *local_connection(void *args) {
                 FD_SET(*elem, &readfds);
             }
             if (*elem > max_fd) {
-                log_debug("Value of FD: %d", *elem);
                 max_fd = *elem;
             }
         }
@@ -303,7 +360,6 @@ void *local_connection(void *args) {
                     list_push(local_connections, client_socket);
                     pthread_mutex_unlock(&local_connections_mutex);
 
-                    log_trace("add client %d to local_connections", client_socket);
                     wa_t *wa = (wa_t *)malloc(sizeof(wa_t));
                     wa->fd = client_socket;
                     wa->remote = false;
@@ -314,7 +370,7 @@ void *local_connection(void *args) {
                 }
             }
         }
-        sleep(3);
     }
+    close(server_socket);
     pthread_exit(NULL);
 }
