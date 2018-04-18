@@ -11,16 +11,23 @@ void *accept_remote_client(void *args) {
 
     log_debug("Socket %d connected\n", socket);
 
-    while (1) {
+    while (true) {
         sprintf(tosend, "%d -- Hello, socket!\n", (int)time(NULL));
 
         nbytes = send(socket, tosend, strlen(tosend), 0);
 
         if (nbytes == -1 && (errno == ECONNRESET || errno == EPIPE)) {
             log_debug("Socket %d disconnected\n", socket);
+
+            pthread_mutex_lock(&remote_connections_mutex);
+            list_remove(remote_connections, socket);
+            pthread_mutex_unlock(&remote_connections_mutex);
             close(socket);
             pthread_exit(NULL);
         } else if (nbytes == -1) {
+            pthread_mutex_lock(&remote_connections_mutex);
+            list_remove(remote_connections, socket);
+            pthread_mutex_unlock(&remote_connections_mutex);
             log_error("Unexpected error in send()");
             pthread_exit(NULL);
         }
@@ -31,92 +38,109 @@ void *accept_remote_client(void *args) {
 }
 
 void *remote_connection(void *args) {
-    int serverSocket;
-    int clientSocket;
+    int server_socket = -1;
+    int client_socket;
     pthread_t worker_thread;
-    struct addrinfo hints, *res, *p;
-    struct sockaddr_storage *clientAddr;
-    socklen_t sinSize = sizeof(struct sockaddr_storage);
+    struct sockaddr_in client_address;
     char *portno = (char *)args;
+    struct ifaddrs *ifap, *ifa;
+    char *addr;
+    int client_len;
 
-    int *wa;
-    int yes = 1;
+    fd_set readfds, testfds;
+    srand(time(NULL));
+    int local_port = (rand() % (50000 - 1500)) + 1500;
 
-    memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags = AI_PASSIVE;
+    getifaddrs(&ifap);
+    for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
+        if (ifa->ifa_addr->sa_family == AF_INET) {
 
-    // Listen on all interfaces
-    if (getaddrinfo(NULL, portno, &hints, &res) != 0) {
-        log_error("getaddrinfo() failed");
-        pthread_exit(NULL);
+            struct sockaddr_in *sa = (struct sockaddr_in *)ifa->ifa_addr;
+            addr = inet_ntoa(sa->sin_addr);
+
+            struct sockaddr_in server_address;
+            server_address.sin_family = AF_INET;
+            server_address.sin_addr.s_addr = sa->sin_addr.s_addr;
+            server_address.sin_port = htons(local_port);
+
+            if ((server_socket = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+                log_info("Could not open socket %s \tAddress: %s", ifa->ifa_name, addr);
+                server_socket = -1;
+                continue;
+            }
+            // no wait time to reuse the socket
+            int bReuseaddr = 1;
+            setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR,
+                       (const char *)&bReuseaddr, sizeof(bReuseaddr));
+
+            if (bind(server_socket, (struct sockaddr *)&server_address,
+                     sizeof(server_address)) == -1) {
+                log_info("Could not bind: %sAddress %s with error %s", ifa->ifa_name,
+                         addr, strerror(errno));
+                close(server_socket);
+                server_socket = -1;
+                continue;
+            }
+
+            if (listen(server_socket, 5) == -1) {
+                log_info("Could not listen: %s Address: %s", ifa->ifa_name, addr);
+                close(server_socket);
+                server_socket = -1;
+                continue;
+            }
+
+            log_info("Listener on interface: %s Address: %s Port: %d\n",
+                     ifa->ifa_name, addr, local_port);
+            break;
+        }
     }
 
-    for (p = res; p != NULL; p = p->ai_next) {
-        if ((serverSocket = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) ==
-                -1) {
-            log_error("Could not open socket on %s",
-                      inet_ntoa(((struct sockaddr_in *)(p->ai_addr))->sin_addr));
-            continue;
-        }
+    freeifaddrs(ifap);
 
-        if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) ==
-                -1) {
-            log_error("Socket setsockopt() failed on %s",
-                      inet_ntoa(((struct sockaddr_in *)(p->ai_addr))->sin_addr));
-            close(serverSocket);
-            continue;
-        }
-
-        if (bind(serverSocket, p->ai_addr, p->ai_addrlen) == -1) {
-            log_error("Socket bind() failed on %s",
-                      inet_ntoa(((struct sockaddr_in *)(p->ai_addr))->sin_addr));
-            close(serverSocket);
-            continue;
-        }
-
-        if (listen(serverSocket, 5) == -1) {
-            log_error("Socket listen() failed on %s",
-                      inet_ntoa(((struct sockaddr_in *)(p->ai_addr))->sin_addr));
-            close(serverSocket);
-            continue;
-        }
-
-        break;
-    }
-
-    freeaddrinfo(res);
-
-    if (p == NULL) {
+    if (server_socket == -1) {
         log_error("Could not find address to bind to");
         pthread_exit(NULL);
     }
 
+    FD_ZERO(&readfds);
+    FD_SET(server_socket, &readfds);
     /* Loop and wait for connections */
     while (true) {
-        /* Call accept(). The thread will block until a client establishes a
-         * connection. */
-        clientAddr = malloc(sinSize);
-        if ((clientSocket = accept(serverSocket, (struct sockaddr *)clientAddr,
-                                   &sinSize)) == -1) {
-            /* If this particular connection fails, no need to kill the entire thread.
-             */
-            free(clientAddr);
-            perror("Could not accept() connection");
-            continue;
+        int fd;
+
+        testfds = readfds;
+        int result = select(FD_SETSIZE, &testfds, (fd_set *)0, (fd_set *)0,
+                            (struct timeval *)0);
+        if (result < 1) {
+            log_error("remote select error");
+            pthread_exit(NULL);
         }
 
-        wa = malloc(sizeof(int));
-        *wa = clientSocket;
+        for (fd = 0; fd < FD_SETSIZE; fd++) {
+            // some data
+            if (FD_ISSET(fd, &testfds)) {
+                // new connection
+                if (fd == server_socket) {
+                    client_len = sizeof(client_address);
+                    client_socket = accept(
+                                        server_socket, (struct sockaddr *)&client_address, &client_len);
+                    if (client_socket < 0) {
+                        log_error("failed to accept connection");
+                        continue;
+                    }
 
-        if (pthread_create(&worker_thread, NULL, accept_remote_client, wa) != 0) {
-            perror("Could not create a worker thread");
-            free(clientAddr);
-            free(wa);
-            close(clientSocket);
-            close(serverSocket);
-            pthread_exit(NULL);
+                    pthread_mutex_lock(&remote_connections_mutex);
+                    list_push(remote_connections, client_socket);
+                    pthread_mutex_unlock(&remote_connections_mutex);
+                    FD_SET(client_socket, &readfds);
+
+                    log_trace("add client %d to remote_connections", client_socket);
+                    if (pthread_create(&worker_thread, NULL, accept_remote_client,
+                                       &client_socket) != 0) {
+                        log_error("unable to create worker thread");
+                    }
+                }
+            }
         }
     }
 
