@@ -115,7 +115,8 @@ int create_remote_socket() {
             server_address.sin_port = htons(local_port);
 
             if ((server_socket = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-                log_info("Could not open socket %s \tAddress: %s", ifa->ifa_name, addr);
+                log_error("Could not open socket %s \tAddress: %s", ifa->ifa_name,
+                          addr);
                 server_socket = -1;
                 continue;
             }
@@ -126,22 +127,22 @@ int create_remote_socket() {
 
             if (bind(server_socket, (struct sockaddr *)&server_address,
                      sizeof(server_address)) == -1) {
-                log_info("Could not bind: %sAddress %s with error %s", ifa->ifa_name,
-                         addr, strerror(errno));
+                log_error("Could not bind: %sAddress %s with error %s", ifa->ifa_name,
+                          addr, strerror(errno));
                 close(server_socket);
                 server_socket = -1;
                 continue;
             }
 
             if (listen(server_socket, 5) == -1) {
-                log_info("Could not listen: %s Address: %s", ifa->ifa_name, addr);
+                log_error("Could not listen: %s Address: %s", ifa->ifa_name, addr);
                 close(server_socket);
                 server_socket = -1;
                 continue;
             }
 
-            log_info("Listener on interface: %s Address: %s Port: %d", ifa->ifa_name,
-                     addr, local_port);
+            log_info("Listener on interface: %s Address: %s %d", ifa->ifa_name, addr,
+                     local_port);
             break;
         }
     }
@@ -154,6 +155,10 @@ int establish_sync() {
     int sockfd = -1, rc, i, port, nBytes;
     struct sockaddr_in localAddr, servAddr;
     struct hostent *h;
+    if (portno == NULL || ip == NULL) {
+        return -1;
+    }
+
     port = atoi(portno);
     if (port <= 0 || port > 65535) // check number of TCP server port
     {
@@ -164,7 +169,7 @@ int establish_sync() {
     h = gethostbyname(ip);
     if (h == NULL) // check assigment of TCP server host
     {
-        log_error("unknown host");
+        log_error("Unknown host");
         return -1;
     }
 
@@ -176,7 +181,7 @@ int establish_sync() {
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0) // check TCP socket is created correctly
     {
-        perror("Cannot open socket ");
+        log_error("Could not open sync socket");
         return -1;
     }
 
@@ -186,20 +191,22 @@ int establish_sync() {
     localAddr.sin_addr.s_addr = htonl(INADDR_ANY);
     localAddr.sin_port = htons(0);
 
-    rc = bind(sockfd, (struct sockaddr *)&localAddr, sizeof(localAddr));
-    if (rc < 0) // check TCP socket is bind correctly
-    {
-        perror("Cannot bind on TCP port ");
+    if (bind(sockfd, (struct sockaddr *)&localAddr, sizeof(localAddr)) < 0) {
+        log_error("Could not bind sync socket");
         close(sockfd);
         return -1;
     }
 
-    rc = connect(sockfd, (struct sockaddr *)&servAddr, sizeof(servAddr));
-    if (rc < 0) // check TCP socket is connected correctly
-    {
-        perror("Cannot connect ");
+    if (connect(sockfd, (struct sockaddr *)&servAddr, sizeof(servAddr)) < 0) {
+        log_error("Unable to connect to sync socket");
         close(sockfd);
         return -1;
+    }
+
+    log_info("Starting initial sync with foreign clipboard");
+    char buf[MAX_MESSAGE_SIZE];
+    for (int i = 0; i < MAX_ELEMENTS; i++) {
+        clipboard_paste(sockfd, i, buf, MAX_MESSAGE_SIZE);
     }
 
     return sockfd;
@@ -219,8 +226,14 @@ void *remote_connection(void *args) {
     }
 
     int clipboard_socket = establish_sync();
-    if (clipboard_socket == -1) {
-        log_error("Unable to connect to foreign clipboard");
+    if (clipboard_socket != -1) {
+        wa_t *wa = (wa_t *)malloc(sizeof(wa_t));
+        wa->fd = clipboard_socket;
+        wa->remote = false;
+        if (pthread_create(&worker_thread, NULL, accept_client, wa) != 0) {
+            free(wa);
+            log_error("unable to create worker thread");
+        }
     }
 
     FD_ZERO(&readfds);

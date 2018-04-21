@@ -32,8 +32,8 @@ int clipboard_copy(int clipboard_id, int region, void *buf, size_t count) {
     header.region = region;
     header.data_size = count;
 
-    log_info("Header Information\n\tOP: %d\n\tRegion: %d\n\tData_size:%d",
-             header.op, header.region, header.data_size);
+    log_info("Header Information\tOP: %d\tRegion: %d\tData_size:%d", header.op,
+             header.region, header.data_size);
     if (send(clipboard_id, &header, sizeof(header_t), 0) < sizeof(header_t)) {
         log_warn("Failed to send(): %s with %s", buf, strerror(errno));
         return 0;
@@ -53,8 +53,8 @@ int clipboard_paste(int clipboard_id, int region, void *buf, size_t count) {
     header.region = region;
     header.data_size = count;
 
-    log_info("Header Information\n\tOP: %d\n\tRegion: %d\n\tData_size:%d",
-             header.op, header.region, header.data_size);
+    log_info("Header Information\tOP: %d\tRegion: %d\tData_size:%d", header.op,
+             header.region, header.data_size);
 
     if (send(clipboard_id, &header, sizeof(header_t), 0) < sizeof(header_t)) {
         log_warn("Failed to send(): %s with %s", buf, strerror(errno));
