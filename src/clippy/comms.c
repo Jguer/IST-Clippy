@@ -218,6 +218,11 @@ void *remote_connection(void *args) {
         pthread_exit(NULL);
     }
 
+    int clipboard_socket = establish_sync();
+    if (clipboard_socket == -1) {
+        log_error("Unable to connect to foreign clipboard");
+    }
+
     FD_ZERO(&readfds);
     FD_SET(server_socket, &readfds);
     /* Loop and wait for connections */
