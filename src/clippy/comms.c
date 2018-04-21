@@ -233,6 +233,9 @@ void *remote_connection(void *args) {
 
     int clipboard_socket = establish_sync();
     if (clipboard_socket != -1) {
+        pthread_mutex_lock(&remote_connections_mutex);
+        list_push(remote_connections, clipboard_socket);
+        pthread_mutex_unlock(&remote_connections_mutex);
         wa_t *wa = (wa_t *)malloc(sizeof(wa_t));
         wa->fd = clipboard_socket;
         wa->remote = false;

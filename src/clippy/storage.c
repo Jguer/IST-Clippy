@@ -20,10 +20,12 @@ storage_t *new_storage() {
 }
 
 void print_storage() {
+    puts("Storage dump:");
     for (int i = 0; i < MAX_ELEMENTS; i++) {
         printf("i:%d len:%zu b:%s time:%ld\n", i, msg_store->elements[i]->len,
                msg_store->elements[i]->buf, msg_store->elements[i]->timestamp);
     }
+    fflush(stdout);
 }
 
 int put_message(int region, long int timestamp, char *buf, int len) {
