@@ -26,14 +26,14 @@ void *accept_client(void *args) {
                       wa->fd);
             break;
         } else if (nbytes != sizeof(header_t)) {
-            log_error("sd: %d header unset - read_size: %d, expected: %d", nbytes,
-                      sizeof(header_t), wa->fd);
+            log_error("sd: %d header unset - read_size: %d, expected: %d", wa->fd,
+                      nbytes, sizeof(header_t));
             continue;
         }
 
         timestamp = time(NULL);
 
-        log_debug("sd:%d HEADER Received OP: %d Region: %d Data_size: %d",
+        log_debug("sd:%d HEADER Received OP: %d Region: %d Data_size: %d", wa->fd,
                   header.op, header.region, header.data_size, wa->fd);
 
         if (header.op == COPY) {
@@ -179,8 +179,7 @@ int establish_sync() {
     servAddr.sin_port = htons(port);
 
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockfd < 0) // check TCP socket is created correctly
-    {
+    if (sockfd < 0) {
         log_error("Could not open sync socket");
         return -1;
     }
@@ -203,10 +202,17 @@ int establish_sync() {
         return -1;
     }
 
+    sleep(1);
+    long int timestamp = time(NULL);
+
     log_info("Starting initial sync with foreign clipboard");
     char buf[MAX_MESSAGE_SIZE];
     for (int i = 0; i < MAX_ELEMENTS; i++) {
-        clipboard_paste(sockfd, i, buf, MAX_MESSAGE_SIZE);
+        int nbytes = clipboard_paste(sockfd, i, &buf, MAX_MESSAGE_SIZE);
+        buf[nbytes] = '\0';
+        if (put_message(i, timestamp, buf, nbytes) == -1) {
+            log_error("Failed to put message in storage");
+        }
     }
 
     return sockfd;

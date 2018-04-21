@@ -11,11 +11,19 @@ storage_t *new_storage() {
     for (int i = 0; i < MAX_ELEMENTS; i++) {
         nouveau->elements[i] = (element_t *)malloc(sizeof(element_t));
         nouveau->elements[i]->buf = (char *)calloc(MAX_MESSAGE_SIZE, sizeof(char));
-        nouveau->elements[i]->buf[0] = '\0';
-        nouveau->elements[i]->len = 0;
+        nouveau->elements[i]->buf[0] = 'E';
+        nouveau->elements[i]->buf[1] = '\0';
+        nouveau->elements[i]->len = 1;
         nouveau->elements[i]->timestamp = (unsigned long)time(NULL);
     }
     return nouveau;
+}
+
+void print_storage() {
+    for (int i = 0; i < MAX_ELEMENTS; i++) {
+        printf("i:%d len:%zu b:%s time:%ld\n", i, msg_store->elements[i]->len,
+               msg_store->elements[i]->buf, msg_store->elements[i]->timestamp);
+    }
 }
 
 int put_message(int region, long int timestamp, char *buf, int len) {
