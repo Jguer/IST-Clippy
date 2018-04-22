@@ -7,7 +7,6 @@ typedef struct worker_arguments {
 } wa_t;
 
 void *accept_client(void *args) {
-    int nbytes;
     char buf[MAX_MESSAGE_SIZE];
     wa_t *wa = (wa_t *)args;
 
@@ -18,7 +17,7 @@ void *accept_client(void *args) {
     long int timestamp;
 
     while (true) {
-        nbytes = recv(wa->fd, &header, sizeof(header_t), 0);
+        int nbytes = recv(wa->fd, &header, sizeof(header_t), 0);
         if (nbytes == 0) {
             log_info("socket %d disconnected", wa->fd);
             break;

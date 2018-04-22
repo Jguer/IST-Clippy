@@ -14,7 +14,7 @@ int clipboard_connect(char *clipboard_dir) {
 
     memset(&address, 0, sizeof(struct sockaddr_un));
     address.sun_family = AF_UNIX;
-    snprintf(address.sun_path, UNIX_PATH_MAX, clipboard_dir);
+    strncpy(address.sun_path, clipboard_dir, UNIX_PATH_MAX);
 
     if (connect(socket_fd, (struct sockaddr *)&address,
                 sizeof(struct sockaddr_un)) != 0) {
@@ -31,6 +31,7 @@ int clipboard_copy(int clipboard_id, int region, void *buf, size_t count) {
     header.op = COPY;
     header.region = region;
     header.data_size = count;
+    int nbytes;
 
     /* log_info("Header Information\tOP: %d\tRegion: %d\tData_size:%d", header.op,
      */
@@ -40,12 +41,13 @@ int clipboard_copy(int clipboard_id, int region, void *buf, size_t count) {
         return 0;
     }
 
-    if (send(clipboard_id, buf, header.data_size, 0) < header.data_size) {
+    if ((nbytes = send(clipboard_id, buf, header.data_size, 0)) <
+            header.data_size) {
         log_warn("Failed to send(): %s with %s", buf, strerror(errno));
         return 0;
     };
 
-    return header.data_size; // copy successful
+    return nbytes; // copy successful
 }
 
 int clipboard_paste(int clipboard_id, int region, void *buf, size_t count) {

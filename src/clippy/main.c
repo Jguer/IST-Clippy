@@ -23,7 +23,6 @@ int main(int argc, const char *argv[]) {
 
     pthread_t remote_thread;
     pthread_t local_thread;
-    char *wa = NULL;
     msg_store = new_storage();
 
     pthread_mutex_init(&remote_connections_mutex, NULL);

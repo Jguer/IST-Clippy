@@ -116,7 +116,7 @@ endif
 
 # Version macros
 # Comment/remove this section to remove versioning
-USE_VERSION := false
+USE_VERSION := true
 # If this isn't a git repo or the repo has no tags, git describe will return non-zero
 ifeq ($(shell git describe > /dev/null 2>&1 ; echo $$?), 0)
 	USE_VERSION := true
