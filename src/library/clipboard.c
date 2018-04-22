@@ -82,11 +82,11 @@ int clipboard_wait(int clipboard_id, int region, void *buf, size_t count) {
         log_warn("Failed to send(): %s with %s", buf, strerror(errno));
         return 0;
     }
-
-    if ((nbytes = recv(clipboard_id, buf, MESSAGE_SIZE, 0)) == 0) {
-        log_warn("Failed to recv(): %s with %s", buf, strerror(errno));
-        return 0;
-    };
+    nbytes = recv(clipboard_id, buf, MESSAGE_SIZE, 0);
+    if (nbytes == -1) {
+        log_warn("sd:%d unexpected error in recv(): %s with %s", clipboard_id, buf,
+                 strerror(errno));
+    }
 
     return nbytes; // copy successful
 }

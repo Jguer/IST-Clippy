@@ -19,7 +19,7 @@ void *accept_client(void *args) {
     while (true) {
         nbytes = recv(wa->fd, &header, sizeof(header_t), 0);
         if (nbytes == 0) {
-            log_debug("sd:%d socket disconnected", wa->fd);
+            log_info("socket %d disconnected", wa->fd);
             break;
         } else if (nbytes == -1) {
             log_error("sd:%d unexpected error in recv(): %s", strerror(errno),
@@ -54,6 +54,14 @@ void *accept_client(void *args) {
             if (put_message(header.region, timestamp, buf, header.data_size) == -1) {
                 log_error("Failed to put message in storage");
             }
+            pthread_mutex_lock(&remote_connections_mutex);
+            list_each_elem(remote_connections, elem) {
+                if (*elem != wa->fd) {
+                    clipboard_copy(*elem, header.region, buf, header.data_size);
+                }
+            }
+            pthread_mutex_unlock(&remote_connections_mutex);
+
         } else if (header.op == PASTE) {
             pthread_mutex_lock(&m[header.region]); // start of Critical Section
             element_t *data = get_message(header.region);
@@ -245,9 +253,6 @@ void *remote_connection(void *args) {
         }
     }
 
-    FD_ZERO(&readfds);
-    FD_SET(server_socket, &readfds);
-    /* Loop and wait for connections */
     while (true) {
         FD_ZERO(&readfds);
         FD_SET(server_socket, &readfds);
