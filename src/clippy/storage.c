@@ -42,7 +42,7 @@ int put_message(int region, long int timestamp, char *buf, int len) {
         log_trace("New Element[%d] Value=\"%s\"", region,
                   msg_store->elements[region]->buf);
     }
-    pthread_cond_signal(&c[region]);
+    pthread_cond_broadcast(&c[region]);
     pthread_mutex_unlock(&m[region]);
 
     return 0;

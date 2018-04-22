@@ -1,4 +1,5 @@
 #include "comms.h"
+#define STDIN 0
 
 typedef struct worker_arguments {
     int fd;
@@ -11,7 +12,7 @@ void *accept_client(void *args) {
     wa_t *wa = (wa_t *)args;
 
     pthread_detach(pthread_self());
-    log_debug("socket %d connected", wa->fd);
+    /* log_debug("socket %d connected", wa->fd); */
 
     header_t header;
     long int timestamp;
@@ -33,8 +34,9 @@ void *accept_client(void *args) {
 
         timestamp = time(NULL);
 
-        log_debug("sd:%d HEADER Received OP: %d Region: %d Data_size: %d", wa->fd,
-                  header.op, header.region, header.data_size, wa->fd);
+        /* log_debug("sd:%d HEADER Received OP: %d Region: %d Data_size: %d",
+         * wa->fd, */
+        /*           header.op, header.region, header.data_size, wa->fd); */
 
         if (header.op == COPY) {
             if (header.data_size > MAX_MESSAGE_SIZE) {
@@ -353,6 +355,7 @@ void *local_connection(void *args) {
     /* Loop and wait for connections */
     while (true) {
         FD_ZERO(&readfds);
+        FD_SET(STDIN, &readfds);
         FD_SET(server_socket, &readfds);
 
         int max_fd = server_socket;
@@ -376,10 +379,19 @@ void *local_connection(void *args) {
         }
 
         for (int fd = 0; fd < FD_SETSIZE; fd++) {
-            // some data
             if (FD_ISSET(fd, &testfds)) {
-                // new connection
-                if (fd == server_socket) {
+                if (fd == STDIN) {
+                    char buf[MAX_MESSAGE_SIZE];
+                    if (!fgets(buf, MAX_MESSAGE_SIZE, stdin)) {
+                        if (ferror(stdin)) {
+                            log_error("failed to receive stdin");
+                        }
+                        if (strstr(buf, "exit") != NULL) {
+                            log_info("user interrupt");
+                            exit(0);
+                        }
+                    }
+                } else if (fd == server_socket) {
                     client_len = sizeof(client_address);
                     client_socket = accept(
                                         server_socket, (struct sockaddr *)&client_address, &client_len);
