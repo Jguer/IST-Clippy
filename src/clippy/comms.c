@@ -288,8 +288,9 @@ void *remote_connection(void *args) {
                 // new connection
                 if (fd == server_socket) {
                     client_len = sizeof(client_address);
-                    client_socket = accept(
-                                        server_socket, (struct sockaddr *)&client_address, &client_len);
+                    client_socket =
+                        accept(server_socket, (struct sockaddr *)&client_address,
+                               (socklen_t *)&client_len);
                     if (client_socket < 0) {
                         log_error("failed to accept connection");
                         continue;
