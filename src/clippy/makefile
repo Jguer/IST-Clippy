@@ -1,4 +1,4 @@
-#### PROJECT SETTINGS ####
+.PHONY: test all
 # The name of the executable to be created
 BIN_NAME := clippy
 # Compiler used
@@ -10,22 +10,21 @@ SRC_PATH = .
 # Space-separated pkg-config libraries used by this project
 LIBS =
 # General compiler flags
-#COMPILE_FLAGS = -march=native -std=gnu11 -Wall -Wextra -Werror -g -Wpedantic -Wshadow -Wstrict-overflow -fno-strict-aliasing
 COMPILE_FLAGS = -march=native -std=gnu11 -pthread -DLOG_USE_COLOR
 # Additional release-specific flags
-RCOMPILE_FLAGS = -D NDEBUG
+RCOMPILE_FLAGS = -D NDEBUG -O2 -Os
 # Additional debug-specific flags
-DCOMPILE_FLAGS = -D DEBUG
+DCOMPILE_FLAGS = -D DEBUG -g3 -ggdb -gdwarf-4 -O0 -fno-inline -DDEBUG -Wall -Werror
 # Add additional include paths
 INCLUDES = -I $(SRC_PATH)
 # General linker settings
-LINK_FLAGS =-pthread
+LINK_FLAGS = -pthread -g
 # Additional release-specific linker settings
 RLINK_FLAGS =
 # Additional debug-specific linker settings
-DLINK_FLAGS =
+DLINK_FLAGS = -g3 -ggdb -gdwarf-4 -O0 -fno-inline -DDEBUG -Wall -Werror
 # Destination directory, like a jail or mounted system
-DESTDIR = ./../..
+DESTDIR =
 # Install path (bin/ is appended automatically)
 INSTALL_PREFIX = usr/local
 #### END PROJECT SETTINGS ####

@@ -14,7 +14,7 @@ int main(int argc, const char *argv[]) {
         if (strcmp(argv[1], "-c") == 0) {
             ip = argv[2];
             portno = argv[3];
-            log_info("IP: %s PORT: %d", ip, portno);
+            log_info("IP: %s PORT: %s", ip, portno);
         } else if (strcmp(argv[1], "-h") == 0) {
             usage(argv[0]);
             return EXIT_FAILURE;

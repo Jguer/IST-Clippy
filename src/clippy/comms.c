@@ -86,6 +86,9 @@ void *accept_client(void *args) {
 
             write(wa->fd, data->buf, data_size);
             pthread_mutex_unlock(&m[header.region]);
+        } else {
+            log_error("sd: %d invalid OP %d", wa->fd, header.op);
+            continue;
         }
     }
 
@@ -161,7 +164,7 @@ int create_remote_socket() {
 }
 
 int establish_sync() {
-    int sockfd = -1, rc, i, port, nBytes;
+    int sockfd = -1, port;
     struct sockaddr_in localAddr, servAddr;
     struct hostent *h;
     if (portno == NULL || ip == NULL) {
@@ -347,7 +350,7 @@ void *local_connection(void *args) {
     pthread_t worker_thread;
     struct sockaddr_in client_address;
     int client_socket;
-    int client_len;
+    socklen_t client_len;
     fd_set readfds, testfds;
 
     int server_socket = create_local_socket();

@@ -39,7 +39,7 @@ list(int, local_connections);
 
 storage_t *msg_store;
 storage_t *new_storage();
-int put_message(int region, long int timestamp, char *buf, int len);
+int put_message(int region, unsigned long timestamp, char *buf, int len);
 element_t *get_message(int region);
 void print_storage();
 
