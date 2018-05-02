@@ -130,6 +130,10 @@ int create_remote_socket() {
     getifaddrs(&ifap);
     for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
         if (ifa->ifa_addr->sa_family == AF_INET) {
+            if (!strstr(ifa->ifa_name, "lo")) {
+                printf("Skipping %s", ifa->ifa_name);
+                continue;
+            }
 
             struct sockaddr_in *sa = (struct sockaddr_in *)ifa->ifa_addr;
             addr = inet_ntoa(sa->sin_addr);
