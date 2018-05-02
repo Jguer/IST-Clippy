@@ -28,15 +28,19 @@ void print_storage() {
     fflush(stdout);
 }
 
-int put_message(int region, unsigned long timestamp, char *buf, int len) {
+int put_message(int region, unsigned long timestamp, int hash, int len,
+                char *buf) {
     if (region > MAX_ELEMENTS - 1) {
         log_error("Naughty tried to put message in excess position");
         return -1;
     }
 
     pthread_mutex_lock(&m[region]); // start of Critical Section
-    if (timestamp > msg_store->elements[region]->timestamp) {
+    if (timestamp > msg_store->elements[region]->timestamp ||
+            (timestamp == msg_store->elements[region]->timestamp &&
+             hash > msg_store->elements[region]->hash)) {
         msg_store->elements[region]->timestamp = timestamp;
+        msg_store->elements[region]->hash = hash;
         strncpy(msg_store->elements[region]->buf, buf, MAX_MESSAGE_SIZE);
         msg_store->elements[region]->len = len;
         log_trace("New Element[%d] Value=\"%s\"", region,

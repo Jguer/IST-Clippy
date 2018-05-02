@@ -31,11 +31,17 @@ void *accept_client(void *args) {
             continue;
         }
 
-        timestamp = time(NULL);
-
         /* log_debug("sd:%d HEADER Received OP: %d Region: %d Data_size: %d",
          * wa->fd, */
         /*           header.op, header.region, header.data_size, wa->fd); */
+        timestamp = time(NULL);
+        if (timestamp < header.timestamp) {
+            log_error("sd:%d has an invalid timestamp. Timestamp overwritten. This "
+                      "incident will "
+                      "be reported",
+                      wa->fd);
+            header.timestamp = timestamp;
+        }
 
         if (header.op == COPY) {
             if (header.data_size > MAX_MESSAGE_SIZE) {
@@ -51,10 +57,17 @@ void *accept_client(void *args) {
             }
 
             buf[header.data_size] = '\0';
+            int calc_hash = ht_hash(buf);
+            if (calc_hash != header.hash) {
+                log_error("sd:%d Hash does not correspond to header", wa->fd);
+                header.hash = calc_hash;
+            }
 
-            if (put_message(header.region, timestamp, buf, header.data_size) == -1) {
+            if (put_message(header.region, header.timestamp, header.hash,
+                            header.data_size, buf) == -1) {
                 log_error("Failed to put message in storage");
             }
+
             pthread_mutex_lock(&remote_connections_mutex);
             list_each_elem(remote_connections, elem) {
                 if (*elem != wa->fd) {
@@ -215,14 +228,13 @@ int establish_sync() {
     }
 
     sleep(1);
-    long int timestamp = time(NULL);
 
     log_info("Starting initial sync with foreign clipboard");
     char buf[MAX_MESSAGE_SIZE];
     for (int i = 0; i < MAX_ELEMENTS; i++) {
         int nbytes = clipboard_paste(sockfd, i, &buf, MAX_MESSAGE_SIZE);
         buf[nbytes] = '\0';
-        if (put_message(i, timestamp, buf, nbytes) == -1) {
+        if (put_message(i, 0, 0, nbytes, buf) == -1) {
             log_error("Failed to put message in storage");
         }
     }

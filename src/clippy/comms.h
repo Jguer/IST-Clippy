@@ -1,7 +1,6 @@
 #ifndef REMOTE_HEADER
 #define REMOTE_HEADER
 
-#include "library/clipboard.h"
 #include "storage.h"
 #include "utils/defs.h"
 #include "utils/log.h"

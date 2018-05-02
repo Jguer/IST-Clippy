@@ -11,6 +11,8 @@
 #include <string.h>
 #include <time.h>
 
+#include "library/clipboard.h"
+
 #define MAX_ELEMENTS 10
 #define MAX_MESSAGE_SIZE 4096
 
@@ -18,6 +20,7 @@ typedef struct element {
     char *buf;
     size_t len;
     unsigned long timestamp;
+    int hash;
 } element_t;
 
 typedef struct storage {
@@ -39,8 +42,8 @@ list(int, local_connections);
 
 storage_t *msg_store;
 storage_t *new_storage();
-int put_message(int region, unsigned long timestamp, char *buf, int len);
+int put_message(int region, unsigned long timestamp, int hash, int len,
+                char *buf);
 element_t *get_message(int region);
 void print_storage();
-
 #endif

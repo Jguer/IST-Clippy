@@ -11,7 +11,7 @@ SRC_PATH = .
 LIBS =
 # General compiler flags
 #COMPILE_FLAGS = -march=native -std=gnu11 -Wall -Wextra -Werror -g -Wpedantic -Wshadow -Wstrict-overflow -fno-strict-aliasing
-COMPILE_FLAGS = -march=native -std=gnu11 -pthread -DLOG_USE_COLOR
+COMPILE_FLAGS = -march=native -std=gnu11 -DLOG_USE_COLOR
 # Additional release-specific flags
 RCOMPILE_FLAGS = -D NDEBUG
 # Additional debug-specific flags
@@ -19,7 +19,7 @@ DCOMPILE_FLAGS = -D DEBUG
 # Add additional include paths
 INCLUDES = -I $(SRC_PATH)
 # General linker settings
-LINK_FLAGS =-pthread
+LINK_FLAGS =-lm
 # Additional release-specific linker settings
 RLINK_FLAGS =
 # Additional debug-specific linker settings
