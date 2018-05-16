@@ -14,7 +14,7 @@ void *accept_client(void *args) {
     /* log_debug("socket %d connected", wa->fd); */
 
     header_t header;
-    long int timestamp;
+    unsigned long timestamp;
 
     while (true) {
         int nbytes = recv(wa->fd, &header, sizeof(header_t), 0);
@@ -34,16 +34,17 @@ void *accept_client(void *args) {
         /* log_debug("sd:%d HEADER Received OP: %d Region: %d Data_size: %d",
          * wa->fd, */
         /*           header.op, header.region, header.data_size, wa->fd); */
-        timestamp = time(NULL);
-        if (timestamp < header.timestamp) {
-            log_error("sd:%d has an invalid timestamp. Timestamp overwritten. This "
-                      "incident will "
-                      "be reported",
-                      wa->fd);
-            header.timestamp = timestamp;
-        }
 
         if (header.op == COPY) {
+            timestamp = time(NULL);
+            if (timestamp < header.timestamp) {
+                log_error("sd:%d has an invalid timestamp. Timestamp overwritten. This "
+                          "incident will "
+                          "be reported",
+                          wa->fd);
+                header.timestamp = timestamp;
+            }
+
             if (header.data_size > MAX_MESSAGE_SIZE) {
                 log_error(
                     "sd:%d Your message exceeds MAX_MESSAGE_SIZE. This incident will "
@@ -238,7 +239,7 @@ int establish_sync() {
     for (int i = 0; i < MAX_ELEMENTS; i++) {
         int nbytes = clipboard_paste(sockfd, i, &buf, MAX_MESSAGE_SIZE);
         buf[nbytes] = '\0';
-        if (put_message(i, 0, 0, nbytes, buf) == -1) {
+        if (put_message(i, 1, 0, nbytes, buf) == -1) {
             log_error("Failed to put message in storage");
         }
     }

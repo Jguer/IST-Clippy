@@ -14,7 +14,7 @@ storage_t *new_storage() {
         nouveau->elements[i]->buf[0] = 'E';
         nouveau->elements[i]->buf[1] = '\0';
         nouveau->elements[i]->len = 1;
-        nouveau->elements[i]->timestamp = (unsigned long)time(NULL);
+        nouveau->elements[i]->timestamp = 0;
     }
     return nouveau;
 }
