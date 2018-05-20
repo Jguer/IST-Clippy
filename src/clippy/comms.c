@@ -126,7 +126,7 @@ int create_remote_socket() {
     char *addr;
 
     srand(time(NULL));
-    int local_port = (rand() % (50000 - 1500)) + 1500;
+    int local_port = (rand() % (8100 - 8000)) + 8000;
 
     getifaddrs(&ifap);
     for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
