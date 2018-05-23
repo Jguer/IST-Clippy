@@ -1,9 +1,8 @@
-#pragma once
-#ifndef STORAGE_HEADER_GUARD
-#define STORAGE_HEADER_GUARD
+#ifndef STORAGE_H
+#define STORAGE_H
 
-#include "utils/list.h"
-#include "utils/log.h"
+#include "../utils/list.h"
+#include "../utils/log.h"
 
 #include <pthread.h>
 #include <stdbool.h>
@@ -11,7 +10,7 @@
 #include <string.h>
 #include <time.h>
 
-#include "library/clipboard.h"
+#include "../library/clipboard.h"
 
 #define MAX_ELEMENTS 10
 #define MAX_MESSAGE_SIZE 4096

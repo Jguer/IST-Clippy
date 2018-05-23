@@ -2,8 +2,6 @@
 #define REMOTE_HEADER
 
 #include "storage.h"
-#include "utils/defs.h"
-#include "utils/log.h"
 #include <arpa/inet.h>
 #include <errno.h>
 #include <fcntl.h>

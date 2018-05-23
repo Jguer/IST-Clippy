@@ -1,6 +1,0 @@
-#ifndef DEFS_HEADER_GUARD
-#define DEFS_HEADER_GUARD
-
-#define MESSAGE_SIZE 1024
-
-#endif

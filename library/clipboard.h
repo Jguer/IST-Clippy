@@ -1,7 +1,6 @@
 #ifndef CLIPBOARD_HEADER
 #define CLIPBOARD_HEADER
 
-#include "../utils/defs.h"
 #include "../utils/log.h"
 
 #include <errno.h>
@@ -15,6 +14,8 @@
 #include <sys/un.h>
 #include <time.h>
 #include <unistd.h>
+
+#define MESSAGE_SIZE 4096
 
 enum op { COPY, PASTE, WAIT };
 
