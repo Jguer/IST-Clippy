@@ -44,7 +44,6 @@ void start_service() {
             log_error("unable to create worker thread");
         }
     }
-    max_fd = (sync_socket > max_fd) ? sync_socket : max_fd;
 
     fd_set readfds, testfds;
     struct sockaddr_in client_address;
@@ -54,7 +53,6 @@ void start_service() {
     FD_ZERO(&readfds);
     FD_SET(remote_socket, &readfds);
     FD_SET(local_socket, &readfds);
-    FD_SET(sync_socket, &readfds);
     FD_SET(STDIN_FILENO, &readfds);
     while (true) {
         int fd;

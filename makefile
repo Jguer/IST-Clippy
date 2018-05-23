@@ -1,6 +1,6 @@
 .PHONY: default all clean test
 CC = gcc
-default: xhelloworld xtestwait clippy
+default: xhelloworld xtestwait xfuzzer clippy
 all: default
 
 # Apps
@@ -8,6 +8,8 @@ xhelloworld: apps/helloworld/main.c clipboard.o
 	$(CC) -lm -o xhelloworld apps/helloworld/main.c clipboard.o
 xtestwait: apps/testwait/main.c clipboard.o
 	$(CC) -lm -o xtestwait apps/testwait/main.c clipboard.o
+xfuzzer: apps/fuzzer.c clipboard.o
+	$(CC) -lm -o xfuzzer apps/fuzzer.c clipboard.o
 
 # Server
 clippy:clippy/main.c clippy/comms.c clippy/comms.h \

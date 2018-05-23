@@ -77,8 +77,17 @@ void *accept_client(void *args) {
             }
             pthread_mutex_unlock(&remote_connections_mutex);
 
-        } else if (header.op == PASTE) {
+        } else if (header.op == PASTE || header.op == WAIT) {
+            if (header.region > MAX_ELEMENTS - 1 || header.region < 0) {
+                write(wa->fd, "\0", 1);
+                continue;
+            }
             pthread_mutex_lock(&m[header.region]); // start of Critical Section
+            if (header.op == WAIT) {
+                if (pthread_cond_wait(&c[header.region], &m[header.region]) != 0) {
+                    log_error("Unable to wait for paste");
+                }
+            }
             element_t *data = get_message(header.region);
             size_t data_size = data->len;
             if (data_size > header.data_size) {
@@ -87,19 +96,6 @@ void *accept_client(void *args) {
             write(wa->fd, data->buf, data_size);
             pthread_mutex_unlock(&m[header.region]);
 
-        } else if (header.op == WAIT) {
-            pthread_mutex_lock(&m[header.region]); // start of Critical Section
-            if (pthread_cond_wait(&c[header.region], &m[header.region]) != 0) {
-                log_error("Unable to wait for paste");
-            }
-            element_t *data = get_message(header.region);
-            size_t data_size = data->len;
-            if (data_size > header.data_size) {
-                data_size = header.data_size;
-            }
-
-            write(wa->fd, data->buf, data_size);
-            pthread_mutex_unlock(&m[header.region]);
         } else {
             log_error("sd: %d invalid OP %d", wa->fd, header.op);
             continue;
@@ -132,7 +128,6 @@ int create_remote_socket() {
     for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
         if (ifa->ifa_addr->sa_family == AF_INET) {
             if (strstr(ifa->ifa_name, "lo")) {
-                printf("Skipping %s", ifa->ifa_name);
                 continue;
             }
 
@@ -215,7 +210,6 @@ int establish_sync() {
     }
 
     /* Bind any port number */
-
     localAddr.sin_family = AF_INET;
     localAddr.sin_addr.s_addr = htonl(INADDR_ANY);
     localAddr.sin_port = htons(0);
@@ -265,14 +259,17 @@ int create_local_socket() {
     size_t len = strlen(address.sun_path) + sizeof(address.sun_family);
 
     if (bind(server_socket, (struct sockaddr *)&address, len) < 0) {
+        close(server_socket);
         log_fatal("local socket bind failed");
-        pthread_exit(NULL);
+        return -1;
     }
+
     log_info("Listener on path %s", SOCK_PATH);
 
     if (listen(server_socket, 5) < 0) {
+        close(server_socket);
         log_fatal("local socket listen failed");
-        exit(EXIT_FAILURE);
+        return -1;
     }
     log_info("Waiting Connections");
     return server_socket;

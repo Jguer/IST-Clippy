@@ -53,7 +53,7 @@ int put_message(int region, unsigned long timestamp, int hash, int len,
 }
 
 element_t *get_message(int region) {
-    if (region > MAX_ELEMENTS - 1) {
+    if (region > MAX_ELEMENTS - 1 || region < 0) {
         log_error("Naughty tried to get message in excess position");
         return NULL;
     }
