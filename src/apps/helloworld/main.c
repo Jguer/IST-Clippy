@@ -1,4 +1,4 @@
-#include "../library/clipboard.h"
+#include "../../library/clipboard.h"
 
 int main(int argc, char const *argv[]) {
     int clipboard_id = clipboard_connect("/tmp/CLIPBOARD_SOCKET");

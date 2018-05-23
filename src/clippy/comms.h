@@ -31,9 +31,11 @@
 char const *portno;
 char const *ip;
 
-void *accept_local_client(void *);
+void *accept_client(void *);
 void *local_connection(void *);
-void *accept_remote_client(void *);
 void *remote_connection(void *);
+int create_local_socket();
+int create_remote_socket();
+int establish_sync();
 
 #endif

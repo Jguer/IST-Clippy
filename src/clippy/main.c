@@ -9,6 +9,123 @@ void usage(const char *name) { //_Verbose_OPT_* are debug only variables
             "\t\t\t[server port]\n");
 }
 
+typedef struct worker_arguments {
+    int fd;
+    bool remote;
+} wa_t;
+
+void start_service() {
+    pthread_t worker_thread;
+
+    int local_socket = create_local_socket();
+    if (local_socket == -1) {
+        log_error("Could not bind local address");
+        exit(EXIT_FAILURE);
+    }
+    int max_fd = local_socket;
+
+    int remote_socket = create_remote_socket();
+    if (remote_socket == -1) {
+        log_error("Could not bind remote socket");
+        exit(EXIT_FAILURE);
+    }
+    max_fd = (remote_socket > max_fd) ? remote_socket : max_fd;
+
+    int sync_socket = establish_sync();
+    if (sync_socket != -1) {
+        pthread_mutex_lock(&remote_connections_mutex);
+        list_push(remote_connections, sync_socket);
+        pthread_mutex_unlock(&remote_connections_mutex);
+        wa_t *wa = (wa_t *)malloc(sizeof(wa_t));
+        wa->fd = sync_socket;
+        wa->remote = true;
+        if (pthread_create(&worker_thread, NULL, accept_client, wa) != 0) {
+            free(wa);
+            log_error("unable to create worker thread");
+        }
+    }
+    max_fd = (sync_socket > max_fd) ? sync_socket : max_fd;
+
+    fd_set readfds, testfds;
+    struct sockaddr_in client_address;
+    int client_socket;
+    socklen_t client_len;
+
+    FD_ZERO(&readfds);
+    FD_SET(remote_socket, &readfds);
+    FD_SET(local_socket, &readfds);
+    FD_SET(sync_socket, &readfds);
+    FD_SET(STDIN_FILENO, &readfds);
+    while (true) {
+        int fd;
+        testfds = readfds;
+        int result = select(max_fd + 1, &testfds, (fd_set *)0, (fd_set *)0,
+                            (struct timeval *)0);
+        if (result < 1) {
+            log_error("remote select error");
+        }
+
+        for (fd = 0; fd < max_fd + 1; fd++) {
+            if (FD_ISSET(fd, &testfds)) {
+                if (fd == STDIN_FILENO) {
+                    char buf[MAX_MESSAGE_SIZE];
+                    int len = read(STDIN_FILENO, buf, MAX_MESSAGE_SIZE);
+                    buf[len] = '\0';
+                    if (strstr(buf, "exit") != NULL) {
+                        log_info("user interrupt");
+                        goto serverexit;
+                    }
+                } else if (fd == local_socket) {
+                    client_len = sizeof(client_address);
+                    client_socket =
+                        accept(local_socket, (struct sockaddr *)&client_address,
+                               (socklen_t *)&client_len);
+                    if (client_socket < 0) {
+                        log_error("failed to accept connection");
+                        continue;
+                    }
+
+                    pthread_mutex_lock(&local_connections_mutex);
+                    list_push(local_connections, client_socket);
+                    pthread_mutex_unlock(&local_connections_mutex);
+
+                    wa_t *wa = (wa_t *)malloc(sizeof(wa_t));
+                    wa->fd = client_socket;
+                    wa->remote = false;
+                    if (pthread_create(&worker_thread, NULL, accept_client, wa) != 0) {
+                        free(wa);
+                        log_error("unable to create worker thread");
+                    }
+                } else if (fd == remote_socket) {
+                    client_len = sizeof(client_address);
+                    client_socket =
+                        accept(remote_socket, (struct sockaddr *)&client_address,
+                               (socklen_t *)&client_len);
+                    if (client_socket < 0) {
+                        log_error("failed to accept connection");
+                        continue;
+                    }
+
+                    pthread_mutex_lock(&remote_connections_mutex);
+                    list_push(remote_connections, client_socket);
+                    pthread_mutex_unlock(&remote_connections_mutex);
+
+                    wa_t *wa = (wa_t *)malloc(sizeof(wa_t));
+                    wa->fd = client_socket;
+                    wa->remote = true;
+                    if (pthread_create(&worker_thread, NULL, accept_client, wa) != 0) {
+                        free(wa);
+                        log_error("unable to create worker thread");
+                    }
+                }
+            }
+        }
+    }
+serverexit:
+    close(remote_socket);
+    close(local_socket);
+}
+
 int main(int argc, const char *argv[]) {
     if (argc > 3) {
         if (strcmp(argv[1], "-c") == 0) {
@@ -41,18 +158,5 @@ int main(int argc, const char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    if (pthread_create(&remote_thread, NULL, remote_connection, NULL) < 0) {
-        log_error("Unable to create remote thread");
-        exit(EXIT_FAILURE);
-    }
-
-    if (pthread_create(&local_thread, NULL, local_connection, NULL) < 0) {
-        log_error("Unable to create a local thread");
-        exit(EXIT_FAILURE);
-    }
-
-    pthread_join(local_thread, NULL);
-    pthread_join(remote_thread, NULL);
-
-    pthread_exit(NULL);
+    start_service();
 }
