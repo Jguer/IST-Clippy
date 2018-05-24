@@ -157,4 +157,7 @@ int main(int argc, const char *argv[]) {
     }
 
     start_service();
+    free_storage(msg_store);
+    list_clear(remote_connections);
+    list_clear(local_connections);
 }

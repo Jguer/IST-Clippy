@@ -19,6 +19,16 @@ storage_t *new_storage() {
     return nouveau;
 }
 
+void free_storage(storage_t *to_free) {
+
+    for (int i = 0; i < MAX_ELEMENTS; i++) {
+        free(to_free->elements[i]->buf);
+        free(to_free->elements[i]);
+    }
+    free(to_free->elements);
+    free(to_free);
+}
+
 void print_storage() {
     puts("Storage dump:");
     for (int i = 0; i < MAX_ELEMENTS; i++) {

@@ -45,4 +45,6 @@ int put_message(int region, unsigned long timestamp, int hash, int len,
                 char *buf);
 element_t *get_message(int region);
 void print_storage();
+void free_storage(storage_t *to_free);
+
 #endif
