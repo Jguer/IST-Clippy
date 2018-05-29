@@ -7,35 +7,35 @@ CC = gcc
 #					 -Wswitch-default -Wswitch-enum -Wconversion -Wunreachable-code
 
 LFLAGS = -lm
-CFLAGS = -std=gnu11
+CFLAGS = -std=gnu11 -O2 -Os
 
 default: xhelloworld xtestwait xfuzzer clippy
 all: default
 
 # Apps
 xhelloworld: apps/helloworld/main.c clipboard.o
-	$(CC) $(CFLAGS) $(LFLAGS) -o xhelloworld apps/helloworld/main.c clipboard.o
+	$(CC) $(CFLAGS) -o xhelloworld apps/helloworld/main.c clipboard.o $(LFLAGS)
 xtestwait: apps/testwait/main.c clipboard.o
-	$(CC) $(CFLAGS) $(LFLAGS) -o xtestwait apps/testwait/main.c clipboard.o
+	$(CC) $(CFLAGS) -o xtestwait apps/testwait/main.c clipboard.o $(LFLAGS)
 xfuzzer: apps/fuzzer.c clipboard.o
-	$(CC) $(CFLAGS) $(LFLAGS) -o xfuzzer apps/fuzzer.c clipboard.o
+	$(CC) $(CFLAGS) -o xfuzzer apps/fuzzer.c clipboard.o $(LFLAGS)
 
 # Server
 clippy:clippy/main.c clippy/comms.c clippy/comms.h \
 	clippy/storage.c clippy/storage.h \
 	log.o list.o clipboard.o
-	$(CC) $(CFLAGS) $(LFLAGS) -lpthread -o xclippy clippy/main.c clippy/comms.c clippy/comms.h \
+	$(CC) $(CFLAGS) -lpthread -o xclippy clippy/main.c clippy/comms.c clippy/comms.h \
 	clippy/storage.c clippy/storage.h \
-	log.o list.o clipboard.o
+	log.o list.o clipboard.o $(LFLAGS)
 
 
 # Dependencies
 clipboard.o : library/clipboard.c library/clipboard.h
-	$(CC) $(CFLAGS) $(LFLAGS) -c library/clipboard.c library/clipboard.h
+	$(CC) $(CFLAGS) -c library/clipboard.c library/clipboard.h $(LFLAGS)
 log.o : utils/log.c utils/log.h
-	$(CC) $(CFLAGS) $(LFLAGS) -c utils/log.c utils/log.h -DLOG_USE_COLOR
+	$(CC) $(CFLAGS) -c utils/log.c utils/log.h -DLOG_USE_COLOR $(LFLAGS)
 list.o : utils/list.c utils/list.h
-	$(CC) $(CFLAGS) $(LFLAGS) -c utils/list.c utils/list.h
+	$(CC) $(CFLAGS) -c utils/list.c utils/list.h $(LFLAGS)
 
 clean :
 	-rm -f *.o
