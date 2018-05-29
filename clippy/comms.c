@@ -177,19 +177,15 @@ int create_remote_socket() {
 }
 
 int establish_sync() {
-    int sockfd = -1, port;
+    int sockfd = -1;
+    uint16_t port;
     struct sockaddr_in localAddr, servAddr;
     struct hostent *h;
     if (portno == NULL || ip == NULL) {
         return -1;
     }
 
-    port = atoi(portno);
-    if (port <= 0 || port > 65535) // check number of TCP server port
-    {
-        log_error("The port number given is wrong");
-        return -1;
-    }
+    port = (uint16_t)atoi(portno);
 
     h = gethostbyname(ip);
     if (h == NULL) // check assigment of TCP server host
@@ -231,7 +227,7 @@ int establish_sync() {
     log_info("Starting initial sync with foreign clipboard");
     char buf[MAX_MESSAGE_SIZE];
     for (int i = 0; i < MAX_ELEMENTS; i++) {
-        int nbytes = clipboard_paste(sockfd, i, &buf, MAX_MESSAGE_SIZE);
+        size_t nbytes = (size_t)clipboard_paste(sockfd, i, &buf, MAX_MESSAGE_SIZE);
         buf[nbytes] = '\0';
         if (put_message(i, 1, 0, nbytes, buf) == -1) {
             log_error("Failed to put message in storage");
@@ -258,7 +254,7 @@ int create_local_socket() {
 
     size_t len = strlen(address.sun_path) + sizeof(address.sun_family);
 
-    if (bind(server_socket, (struct sockaddr *)&address, len) < 0) {
+    if (bind(server_socket, (struct sockaddr *)&address, (socklen_t)len) < 0) {
         close(server_socket);
         log_fatal("local socket bind failed");
         return -1;

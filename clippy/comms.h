@@ -32,8 +32,8 @@ char const *ip;
 void *accept_client(void *);
 void *local_connection(void *);
 void *remote_connection(void *);
-int create_local_socket();
-int create_remote_socket();
-int establish_sync();
+int create_local_socket(void);
+int create_remote_socket(void);
+int establish_sync(void);
 
 #endif

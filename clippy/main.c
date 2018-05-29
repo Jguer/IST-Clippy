@@ -14,7 +14,7 @@ typedef struct worker_arguments {
     bool remote;
 } wa_t;
 
-void start_service() {
+void start_service(void) {
     pthread_t worker_thread;
 
     int local_socket = create_local_socket();

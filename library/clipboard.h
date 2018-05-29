@@ -23,7 +23,7 @@ enum op { COPY, PASTE, WAIT };
 typedef struct header {
     enum op op;
     int region;
-    int data_size;
+    size_t data_size;
     unsigned long timestamp;
     int hash;
 } header_t;

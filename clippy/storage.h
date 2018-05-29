@@ -40,11 +40,10 @@ list(int, remote_connections);
 list(int, local_connections);
 
 storage_t *msg_store;
-storage_t *new_storage();
-int put_message(int region, unsigned long timestamp, int hash, int len,
-                char *buf);
-element_t *get_message(int region);
-void print_storage();
-void free_storage(storage_t *to_free);
+storage_t *new_storage(void);
+int put_message(int, unsigned long, int, size_t, char *);
+element_t *get_message(int);
+void print_storage(void);
+void free_storage(storage_t *);
 
 #endif

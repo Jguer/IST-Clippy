@@ -6,7 +6,7 @@ int ht_hash(char *s) {
     int a = 151;
     int m = 53;
     long hash = 0;
-    const int len_s = strlen(s);
+    const int len_s = (int)strlen(s);
     for (int i = 0; i < len_s; i++) {
         hash += (long)pow(a, len_s - (i + 1)) * s[i];
         hash = hash % m;
@@ -94,9 +94,10 @@ int clipboard_wait(int clipboard_id, int region, void *buf, size_t count) {
     header.op = WAIT;
     header.region = region;
     header.data_size = count;
-    int nbytes;
+    ssize_t nbytes;
 
-    if (send(clipboard_id, &header, sizeof(header_t), 0) < sizeof(header_t)) {
+    if (send(clipboard_id, &header, sizeof(header_t), 0) <
+            (ssize_t)sizeof(header_t)) {
         /* log_warn("Failed to send(): %s with %s", buf, strerror(errno)); */
         return 0;
     }
@@ -107,7 +108,7 @@ int clipboard_wait(int clipboard_id, int region, void *buf, size_t count) {
         /*          strerror(errno)); */
     }
 
-    return nbytes; // copy successful
+    return (int)nbytes; // copy successful
 }
 
 void clipboard_close(int clipboard_id) {
