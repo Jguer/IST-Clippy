@@ -22,7 +22,7 @@ clippy:clippy/main.c clippy/comms.c clippy/comms.h \
 
 # Dependencies
 clipboard.o : library/clipboard.c library/clipboard.h
-	$(CC) -c library/clipboard.c library/clipboard.h
+	$(CC) -lm -c library/clipboard.c library/clipboard.h
 log.o : utils/log.c utils/log.h
 	$(CC) -c utils/log.c utils/log.h -DLOG_USE_COLOR
 list.o : utils/list.c utils/list.h
