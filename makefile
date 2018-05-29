@@ -24,9 +24,9 @@ xfuzzer: apps/fuzzer.c clipboard.o
 clippy:clippy/main.c clippy/comms.c clippy/comms.h \
 	clippy/storage.c clippy/storage.h \
 	log.o list.o clipboard.o
-	$(CC) $(CFLAGS) -lpthread -o xclippy clippy/main.c clippy/comms.c clippy/comms.h \
+	$(CC) $(CFLAGS) -o xclippy clippy/main.c clippy/comms.c clippy/comms.h \
 	clippy/storage.c clippy/storage.h \
-	log.o list.o clipboard.o $(LFLAGS)
+	log.o list.o clipboard.o $(LFLAGS) -lpthread
 
 
 # Dependencies
