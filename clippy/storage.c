@@ -32,8 +32,11 @@ void free_storage(storage_t *to_free) {
 void print_storage() {
     puts("Storage dump:");
     for (int i = 0; i < MAX_ELEMENTS; i++) {
-        printf("i:%d len:%zu b:%s time:%ld\n", i, msg_store->elements[i]->len,
-               msg_store->elements[i]->buf, msg_store->elements[i]->timestamp);
+        printf("i:%d len:%zu hash:%d time:%ld\n", i, msg_store->elements[i]->len,
+               msg_store->elements[i]->hash, msg_store->elements[i]->timestamp);
+        fwrite(msg_store->elements[i]->buf, sizeof(char),
+               msg_store->elements[i]->len, stdout);
+        print("\n");
     }
     fflush(stdout);
 }

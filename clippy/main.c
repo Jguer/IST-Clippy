@@ -72,6 +72,8 @@ void start_service(void) {
                     if (strstr(buf, "exit") != NULL) {
                         log_info("user interrupt");
                         goto serverexit;
+                    } else if (strstr(buf, "storage") != NULL) {
+                        print_storage();
                     }
                 } else if (fd == local_socket) {
                     client_len = sizeof(client_address);

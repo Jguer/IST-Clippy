@@ -44,12 +44,13 @@ void *accept_client(void *args) {
                 header.timestamp = timestamp;
             }
 
-            if (header.data_size > MAX_MESSAGE_SIZE) {
-                log_error(
-                    "sd:%d Your message exceeds MAX_MESSAGE_SIZE. This incident will "
-                    "be reported",
-                    wa->fd);
-            }
+            /* if (header.data_size > MAX_MESSAGE_SIZE) { */
+            /*     log_error( */
+            /*         "sd:%d Your message exceeds MAX_MESSAGE_SIZE. This incident
+             * will " */
+            /*         "be reported", */
+            /*         wa->fd); */
+            /* } */
 
             char *buf = malloc(header.data_size);
             nbytes = recv(wa->fd, buf, header.data_size, MSG_WAITALL);
