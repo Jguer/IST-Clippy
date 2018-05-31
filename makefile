@@ -6,8 +6,10 @@ CC = gcc
 					 # -Wwrite-strings -Waggregate-return -Wcast-qual \
 					 # -Wswitch-default -Wswitch-enum -Wconversion -Wunreachable-code
 
+CFLAGS = -std=gnu11 -g -Wall
+
 LFLAGS = -lm
-CFLAGS = -std=gnu11 -O2 -Os
+# CFLAGS = -std=gnu11 -O2 -Os
 
 default: xhelloworld xtestwait xfuzzer clippy
 all: default
@@ -17,8 +19,8 @@ xhelloworld: apps/helloworld/main.c clipboard.o
 	$(CC) $(CFLAGS) -o xhelloworld apps/helloworld/main.c clipboard.o $(LFLAGS)
 xtestwait: apps/testwait/main.c clipboard.o
 	$(CC) $(CFLAGS) -o xtestwait apps/testwait/main.c clipboard.o $(LFLAGS)
-xfuzzer: apps/fuzzer.c clipboard.o
-	$(CC) $(CFLAGS) -o xfuzzer apps/fuzzer.c clipboard.o $(LFLAGS)
+xfuzzer: apps/fuzzer.c clipboard.o log.o
+	$(CC) $(CFLAGS) -o xfuzzer apps/fuzzer.c clipboard.o log.o $(LFLAGS)
 
 # Server
 clippy:clippy/main.c clippy/comms.c clippy/comms.h \

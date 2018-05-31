@@ -1,4 +1,5 @@
 #include "../library/clipboard.h"
+#include "../utils/log.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -45,17 +46,16 @@ int main(int argc, char const *argv[]) {
 
         msize = rand() % (6000 - 100) + 100;
         reg = rand() % 12;
+        log_trace("REGISTER %d", reg);
+
         sbuf = randstring(msize);
 
-        clipboard_copy(sockfd, reg, sbuf, msize);
-        printf("Sent to %d\n", reg);
-        fwrite(sbuf, msize, 1, stdout);
+        int ssize = clipboard_copy(sockfd, reg, sbuf, msize);
+        log_info("Sent %d, actually: %d", msize, ssize);
 
-        reg = rand() % 12;
+        /* reg = rand() % 12; */
         int size = clipboard_paste(sockfd, reg, buf, msize);
-        buf[size] = '\n';
-        printf("Received from %d\n", reg);
-        fwrite(sbuf, msize, 1, stdout);
+        log_info("Asked for msize %d, got: %d", msize, size);
 
         sleep(1);
     }

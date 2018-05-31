@@ -7,7 +7,6 @@ typedef struct worker_arguments {
 } wa_t;
 
 void *accept_client(void *args) {
-    char buf[MAX_MESSAGE_SIZE * 2];
     wa_t *wa = (wa_t *)args;
 
     pthread_detach(pthread_self());
@@ -52,12 +51,12 @@ void *accept_client(void *args) {
                     wa->fd);
             }
 
+            char *buf = malloc(header.data_size);
             nbytes = recv(wa->fd, buf, header.data_size, MSG_WAITALL);
             if (nbytes < header.data_size) {
                 log_error("sd:%d Received shorter message than expected", wa->fd);
             }
 
-            buf[header.data_size] = '\0';
             int calc_hash = ht_hash(buf);
             if (calc_hash != header.hash) {
                 log_error("sd:%d Hash does not correspond to header", wa->fd);
@@ -68,6 +67,7 @@ void *accept_client(void *args) {
                             header.data_size, buf) == -1) {
                 log_error("Failed to put message in storage");
             }
+            free(buf);
 
             pthread_mutex_lock(&remote_connections_mutex);
             list_each_elem(remote_connections, elem) {
