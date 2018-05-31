@@ -17,7 +17,7 @@ void *accept_client(void *args) {
     unsigned long timestamp;
 
     while (true) {
-        int nbytes = recv(wa->fd, &header, sizeof(header_t), 0);
+        int nbytes = recv(wa->fd, &header, sizeof(header_t), MSG_WAITALL);
         if (nbytes == 0) {
             log_info("socket %d disconnected", wa->fd);
             break;
