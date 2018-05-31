@@ -1,13 +1,13 @@
 .PHONY: default all clean test
 CC = gcc
- CFLAGS = -std=gnu11 -g -Wall -Wextra -Wundef \
-					 -Wshadow -Wfloat-equal -Wpointer-arith \
-					 -Wcast-align -Wstrict-prototypes -Wstrict-overflow=5 \
-					 -Wwrite-strings -Waggregate-return -Wcast-qual \
-					 -Wswitch-default -Wswitch-enum -Wconversion -Wunreachable-code
+ # CFLAGS = -std=gnu11 -g -Wall -Wextra -Wundef \
+					 # -Wshadow -Wfloat-equal -Wpointer-arith \
+					 # -Wcast-align -Wstrict-prototypes -Wstrict-overflow=5 \
+					 # -Wwrite-strings -Waggregate-return -Wcast-qual \
+					 # -Wswitch-default -Wswitch-enum -Wconversion -Wunreachable-code
 
 LFLAGS = -lm
-# CFLAGS = -std=gnu11 -O2 -Os
+CFLAGS = -std=gnu11 -O2 -Os
 
 default: xhelloworld xtestwait xfuzzer clippy
 all: default
