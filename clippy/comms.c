@@ -79,7 +79,10 @@ void *accept_client(void *args) {
 
         } else if (header.op == PASTE || header.op == WAIT) {
             if (header.region > MAX_ELEMENTS - 1 || header.region < 0) {
-                write(wa->fd, "\0", 1);
+                if ((nbytes = clipboard_copy(wa->fd, 0, " ", 1)) != 1) {
+                    log_error("sd: %d pasted size %d, wanted to paste %d", wa->fd, nbytes,
+                              1);
+                }
                 continue;
             }
             pthread_mutex_lock(&m[header.region]); // start of Critical Section
@@ -94,7 +97,6 @@ void *accept_client(void *args) {
                 data_size = header.data_size;
             }
 
-            int nbytes;
             if ((nbytes = clipboard_copy(wa->fd, 0, data->buf, data_size)) !=
                     data_size) {
                 log_error("sd: %d pasted size %d, wanted to paste %d", wa->fd, nbytes,
