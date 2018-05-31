@@ -9,7 +9,7 @@ CC = gcc
 CFLAGS = -std=gnu11 -g -Wall
 
 LFLAGS = -lm
-# CFLAGS = -std=gnu11 -O2 -Os
+# CFLAGS = -std=gnu11 -march=x86-64 -mtune=generic -O2 -pipe -fstack-protector-strong -fno-plt
 
 default: apps server
 all: default
