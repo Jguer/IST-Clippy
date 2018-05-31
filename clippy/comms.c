@@ -52,13 +52,13 @@ void *accept_client(void *args) {
             /*         wa->fd); */
             /* } */
 
-            char *buf = malloc(header.data_size);
+            char *buf = malloc(header.data_size + 1);
             nbytes = recv(wa->fd, buf, header.data_size, MSG_WAITALL);
             if (nbytes < header.data_size) {
                 log_error("sd:%d Received shorter message than expected", wa->fd);
             }
 
-            int calc_hash = ht_hash(buf);
+            int calc_hash = ht_hash(buf, header.data_size);
             if (calc_hash != header.hash) {
                 log_error("sd:%d Hash does not correspond to header", wa->fd);
                 header.hash = calc_hash;

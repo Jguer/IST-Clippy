@@ -32,7 +32,7 @@ void free_storage(storage_t *to_free) {
 void print_storage() {
     puts("Storage dump:");
     for (int i = 0; i < MAX_ELEMENTS; i++) {
-        log_trace("i:%d len:%zu hash:%d time:%ld\n", i, msg_store->elements[i]->len,
+        log_trace("i:%d len:%zu hash:%d time:%ld", i, msg_store->elements[i]->len,
                   msg_store->elements[i]->hash, msg_store->elements[i]->timestamp);
         fwrite(msg_store->elements[i]->buf, sizeof(char),
                msg_store->elements[i]->len, stdout);

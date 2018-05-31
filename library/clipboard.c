@@ -2,11 +2,10 @@
 
 #define UNIX_PATH_MAX 108
 
-int ht_hash(char *s) {
+int ht_hash(char *s, int len_s) {
     int a = 151;
     int m = 53;
     long hash = 0;
-    const int len_s = (int)strlen(s);
     for (int i = 0; i < len_s; i++) {
         hash += (long)pow(a, len_s - (i + 1)) * s[i];
         hash = hash % m;
@@ -43,7 +42,7 @@ int clipboard_copy(int clipboard_id, int region, void *buf, size_t count) {
     header.op = COPY;
     header.region = region;
     header.data_size = count;
-    header.hash = ht_hash(buf);
+    header.hash = ht_hash(buf, count);
     header.timestamp = time(NULL);
     int nbytes;
 

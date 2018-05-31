@@ -29,11 +29,11 @@ typedef struct header {
 } header_t;
 #pragma pack(0) // turn packing off
 
-int clipboard_connect(char *clipboard_dir);
-int clipboard_copy(int clipboard_id, int region, void *buf, size_t count);
-int clipboard_paste(int clipboard_id, int region, void *buf, size_t count);
-int clipboard_wait(int clipboard_id, int region, void *buf, size_t count);
-void clipboard_close(int clipboard_id);
-int ht_hash(char *s);
+int clipboard_connect(char *);
+int clipboard_copy(int, int, void *, size_t);
+int clipboard_paste(int, int, void *, size_t);
+int clipboard_wait(int, int, void *, size_t);
+void clipboard_close(int);
+int ht_hash(char *, int);
 
 #endif
