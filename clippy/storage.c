@@ -51,7 +51,7 @@ int put_message(int region, unsigned long timestamp, int hash, size_t len,
              hash > msg_store->elements[region]->hash)) {
         msg_store->elements[region]->timestamp = timestamp;
         msg_store->elements[region]->hash = hash;
-        strncpy(msg_store->elements[region]->buf, buf, MAX_MESSAGE_SIZE);
+        memcpy(msg_store->elements[region]->buf, buf, len);
         msg_store->elements[region]->len = len;
         log_trace("New Element[%d] Value=\"%s\"", region,
                   msg_store->elements[region]->buf);

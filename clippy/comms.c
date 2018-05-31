@@ -7,7 +7,7 @@ typedef struct worker_arguments {
 } wa_t;
 
 void *accept_client(void *args) {
-    char buf[MAX_MESSAGE_SIZE];
+    char buf[MAX_MESSAGE_SIZE * 2];
     wa_t *wa = (wa_t *)args;
 
     pthread_detach(pthread_self());
@@ -52,7 +52,7 @@ void *accept_client(void *args) {
                     wa->fd);
             }
 
-            nbytes = recv(wa->fd, buf, header.data_size, 0);
+            nbytes = recv(wa->fd, buf, header.data_size, MSG_WAITALL);
             if (nbytes < header.data_size) {
                 log_error("sd:%d Received shorter message than expected", wa->fd);
             }
@@ -93,7 +93,13 @@ void *accept_client(void *args) {
             if (data_size > header.data_size) {
                 data_size = header.data_size;
             }
-            write(wa->fd, data->buf, data_size);
+
+            int nbytes;
+            if ((nbytes = clipboard_copy(wa->fd, 0, data->buf, data_size)) !=
+                    data_size) {
+                log_error("sd: %d pasted size %d, wanted to paste %d", wa->fd, nbytes,
+                          data_size);
+            }
             pthread_mutex_unlock(&m[header.region]);
 
         } else {

@@ -80,17 +80,27 @@ int clipboard_paste(int clipboard_id, int region, void *buf, size_t count) {
         return 0;
     }
 
-    if ((nbytes = recv(clipboard_id, buf, MESSAGE_SIZE, 0)) == 0) {
+    nbytes = recv(clipboard_id, &header, sizeof(header_t), MSG_WAITALL);
+    if (nbytes == 0 || nbytes == -1 || nbytes != sizeof(header_t)) {
+        return 0;
+    }
+
+    void *rbuf = malloc(header.data_size);
+
+    if ((nbytes = recv(clipboard_id, rbuf, header.data_size, MSG_WAITALL)) == 0) {
         /* log_warn("Failed to recv(): %s with %s", buf, strerror(errno)); */
         return 0;
     };
 
+    int data_size = (header.data_size > count) ? count : header.data_size;
+    memcpy(buf, rbuf, data_size);
+
+    free(rbuf);
     return nbytes; // copy successful
 }
 
 int clipboard_wait(int clipboard_id, int region, void *buf, size_t count) {
     header_t header;
-
     header.op = WAIT;
     header.region = region;
     header.data_size = count;
@@ -101,7 +111,8 @@ int clipboard_wait(int clipboard_id, int region, void *buf, size_t count) {
         /* log_warn("Failed to send(): %s with %s", buf, strerror(errno)); */
         return 0;
     }
-    nbytes = recv(clipboard_id, buf, MESSAGE_SIZE, 0);
+
+    nbytes = recv(clipboard_id, buf, count, MSG_WAITALL);
     if (nbytes == -1) {
         /* log_warn("sd:%d unexpected error in recv(): %s with %s", clipboard_id,
          * buf, */

@@ -5,8 +5,8 @@
 
 char *randstring(size_t length) {
 
-    static char charset[] =
-        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,.-#'?!";
+    static char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                            "0123456789,.-#'?!\0\n";
     char *randomString = NULL;
 
     if (length) {
@@ -29,7 +29,7 @@ int main(int argc, char const *argv[]) {
     int sockfd = clipboard_connect("/tmp/CLIPBOARD_SOCKET");
     int reg;
     int msize;
-    char buf[MESSAGE_SIZE];
+    char buf[MESSAGE_SIZE * 2];
     char *sbuf = NULL;
     srand(time(NULL));
 
@@ -43,17 +43,19 @@ int main(int argc, char const *argv[]) {
             sockfd = clipboard_connect("/tmp/CLIPBOARD_SOCKET");
         }
 
-        msize = rand() % (MESSAGE_SIZE - 100) + 100;
+        msize = rand() % (6000 - 100) + 100;
         reg = rand() % 12;
         sbuf = randstring(msize);
 
         clipboard_copy(sockfd, reg, sbuf, msize);
-        printf("Sent\n %s to %d\n", buf, reg);
+        printf("Sent to %d\n", reg);
+        fwrite(sbuf, msize, 1, stdout);
 
         reg = rand() % 12;
         int size = clipboard_paste(sockfd, reg, buf, msize);
         buf[size] = '\n';
-        printf("Received\n %s from %d\n", buf, reg);
+        printf("Received from %d\n", reg);
+        fwrite(sbuf, msize, 1, stdout);
 
         sleep(1);
     }
