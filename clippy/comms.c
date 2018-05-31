@@ -67,16 +67,20 @@ void *accept_client(void *args) {
                             header.data_size, buf) == -1) {
                 log_error("Failed to put message in storage");
             }
-            free(buf);
 
             pthread_mutex_lock(&remote_connections_mutex);
             list_each_elem(remote_connections, elem) {
                 if (*elem != wa->fd) {
-                    clipboard_copy(*elem, header.region, buf, header.data_size);
+                    int nsent =
+                        clipboard_copy(*elem, header.region, buf, header.data_size);
+                    if (nsent != header.data_size) {
+                        log_error("Clipboard %d failed to receive sync", *elem);
+                        clipboard_copy(*elem, header.region, buf, header.data_size);
+                    }
                 }
             }
             pthread_mutex_unlock(&remote_connections_mutex);
-
+            free(buf);
         } else if (header.op == PASTE || header.op == WAIT) {
             if (header.region > MAX_ELEMENTS - 1 || header.region < 0) {
                 if ((nbytes = clipboard_copy(wa->fd, 0, " ", 1)) != 1) {
