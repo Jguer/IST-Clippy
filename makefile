@@ -11,8 +11,11 @@ CFLAGS = -std=gnu11 -g -Wall
 LFLAGS = -lm
 # CFLAGS = -std=gnu11 -O2 -Os
 
-default: xhelloworld xtestwait xfuzzer clippy
+default: apps server
 all: default
+
+apps: xhelloworld xtestwait xfuzzer xminifuzzer
+server: clippy
 
 # Apps
 xhelloworld: apps/helloworld/main.c clipboard.o
@@ -21,6 +24,8 @@ xtestwait: apps/testwait/main.c clipboard.o
 	$(CC) $(CFLAGS) -o xtestwait apps/testwait/main.c clipboard.o $(LFLAGS)
 xfuzzer: apps/fuzzer.c clipboard.o log.o
 	$(CC) $(CFLAGS) -o xfuzzer apps/fuzzer.c clipboard.o log.o $(LFLAGS)
+xminifuzzer: apps/minifuzzer.c clipboard.o log.o
+	$(CC) $(CFLAGS) -o xminifuzzer apps/minifuzzer.c clipboard.o log.o $(LFLAGS)
 
 # Server
 clippy:clippy/main.c clippy/comms.c clippy/comms.h \
