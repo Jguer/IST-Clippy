@@ -1,7 +1,7 @@
 .PHONY: default all clean test
 CC = gcc
 # CFLAGS = -std=gnu11 -g -Wall -Wextra -Wundef \
-			        # -Wshadow -Wfloat-equal -Wpointer-arith \
+							# -Wshadow -Wfloat-equal -Wpointer-arith \
 					# -Wcast-align -Wstrict-prototypes -Wstrict-overflow=5 \
 					# -Wwrite-strings -Waggregate-return -Wcast-qual \
 					# -Wswitch-default -Wswitch-enum -Wconversion -Wunreachable-code
@@ -18,10 +18,10 @@ apps: xhelloworld xtestwait xfuzzer xminifuzzer xtypetoclippy
 server: clippy
 
 # Apps
-xhelloworld: apps/helloworld/main.c clipboard.o
-	$(CC) $(CFLAGS) -o xhelloworld apps/helloworld/main.c clipboard.o $(LFLAGS)
-xtestwait: apps/testwait/main.c clipboard.o
-	$(CC) $(CFLAGS) -o xtestwait apps/testwait/main.c clipboard.o $(LFLAGS)
+xhelloworld: apps/helloworld.c clipboard.o
+	$(CC) $(CFLAGS) -o xhelloworld apps/helloworld.c clipboard.o $(LFLAGS)
+xtestwait: apps/testwait.c clipboard.o
+	$(CC) $(CFLAGS) -o xtestwait apps/testwait.c clipboard.o $(LFLAGS)
 xfuzzer: apps/fuzzer.c clipboard.o log.o
 	$(CC) $(CFLAGS) -o xfuzzer apps/fuzzer.c clipboard.o log.o $(LFLAGS)
 xminifuzzer: apps/minifuzzer.c clipboard.o log.o
