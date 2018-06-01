@@ -13,6 +13,9 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+/**
+ * @brief Default local socket location
+ */
 #define SOCK_PATH "/tmp/CLIPBOARD_SOCKET"
 
 /**
@@ -29,6 +32,16 @@ char const *ip;
  * @brief Clipboard dir
  */
 char const *dir;
+
+/**
+ * @brief Worker Arguments for accept_client.
+ * @see accept_client
+ *
+ */
+typedef struct worker_arguments {
+    int fd;      /**< socket file descriptor. */
+    bool remote; /**< is remote socket */
+} wa_t;
 
 /**
  * @brief Handle remote and local client communication.

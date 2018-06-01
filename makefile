@@ -37,7 +37,7 @@ clippy: main.o storage.o comms.o log.o list.o clipboard.o
 
 # Dependencies
 main.o : clippy/main.c
-	$(CC) $(CFLAGS) -c clippy/main.c
+	$(CC) $(CFLAGS) -c clippy/main.c clippy/comms.h
 storage.o : clippy/storage.c clippy/storage.h
 	$(CC) $(CFLAGS) -c clippy/storage.c clippy/storage.h
 comms.o : clippy/comms.c clippy/comms.h

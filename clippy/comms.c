@@ -1,11 +1,6 @@
 #include "comms.h"
 #define STDIN 0
 
-typedef struct worker_arguments {
-    int fd;
-    bool remote;
-} wa_t;
-
 void *accept_client(void *args) {
     wa_t *wa = (wa_t *)args;
 

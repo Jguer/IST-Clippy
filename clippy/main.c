@@ -12,16 +12,6 @@ void usage(const char *name) { //_Verbose_OPT_* are debug only variables
 }
 
 /**
- * @brief Worker Arguments for accept_client.
- * @see accept_client
- *
- */
-typedef struct worker_arguments {
-    int fd;      /**< socket file descriptor. */
-    bool remote; /**< is remote socket */
-} wa_t;
-
-/**
  * @brief Initialize sockets and handle incoming connections.
  */
 void start_service(void) {
