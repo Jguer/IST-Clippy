@@ -20,10 +20,6 @@ typedef struct storage {
     element_t **elements;
 } storage_t;
 
-typedef struct r_socket {
-    int sd;
-} r_socket_t;
-
 pthread_mutex_t m[MAX_ELEMENTS];
 pthread_cond_t c[MAX_ELEMENTS];
 
