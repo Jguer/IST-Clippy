@@ -34,7 +34,6 @@ clippy: main.o storage.o comms.o log.o list.o clipboard.o
 	$(CC) $(CFLAGS) -o xclippy main.o storage.o comms.o \
 		log.o list.o clipboard.o $(LFLAGS) -lpthread
 
-
 # Dependencies
 main.o : clippy/main.c
 	$(CC) $(CFLAGS) -c clippy/main.c clippy/comms.h
@@ -48,6 +47,11 @@ log.o : utils/log.c utils/log.h
 	$(CC) $(CFLAGS) -c utils/log.c utils/log.h -DLOG_USE_COLOR
 list.o : utils/list.c utils/list.h
 	$(CC) $(CFLAGS) -c utils/list.c utils/list.h
+
+# Documentation
+docs :
+	doxygen Doxyfile
+	xdg-open docs/html/index.html
 
 clean :
 	-rm -f *.o
