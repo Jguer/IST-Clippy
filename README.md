@@ -1,4 +1,7 @@
-# Psis1718S2
+# Clippy
+
+Clippy is a fault resistant distributed clipboard.
+A public library is available in `library/clipboard.h` for usage in apps.
 
 ## Building
 
