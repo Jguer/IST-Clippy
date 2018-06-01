@@ -44,3 +44,4 @@ build/
 *.idb
 *.pdb
 docs/*
+*.jpg
