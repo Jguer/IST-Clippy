@@ -233,10 +233,12 @@ int establish_sync() {
     sleep(1);
 
     log_info("Starting initial sync with foreign clipboard");
-    char buf[MAX_MESSAGE_SIZE];
+
+    // defined buffer size may fail initial sync but over time it will even
+    // out.
+    char buf[8192];
     for (int i = 0; i < MAX_ELEMENTS; i++) {
-        size_t nbytes = (size_t)clipboard_paste(sockfd, i, &buf, MAX_MESSAGE_SIZE);
-        buf[nbytes] = '\0';
+        size_t nbytes = (size_t)clipboard_paste(sockfd, i, &buf, 8192);
         if (put_message(i, 1, 0, nbytes, buf) == -1) {
             log_error("Failed to put message in storage");
         }

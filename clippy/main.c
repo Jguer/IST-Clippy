@@ -66,8 +66,8 @@ void start_service(void) {
         for (fd = 0; fd < max_fd + 1; fd++) {
             if (FD_ISSET(fd, &testfds)) {
                 if (fd == STDIN_FILENO) {
-                    char buf[MAX_MESSAGE_SIZE];
-                    int len = read(STDIN_FILENO, buf, MAX_MESSAGE_SIZE);
+                    char buf[4096];
+                    int len = read(STDIN_FILENO, buf, 4096);
                     buf[len] = '\0';
                     if (strstr(buf, "exit") != NULL) {
                         log_info("user interrupt");

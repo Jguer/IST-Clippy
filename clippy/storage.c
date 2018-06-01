@@ -10,10 +10,10 @@ storage_t *new_storage() {
     nouveau->elements = (element_t **)malloc(sizeof(element_t *) * MAX_ELEMENTS);
     for (int i = 0; i < MAX_ELEMENTS; i++) {
         nouveau->elements[i] = (element_t *)malloc(sizeof(element_t));
-        nouveau->elements[i]->buf = (char *)calloc(MAX_MESSAGE_SIZE, sizeof(char));
+        nouveau->elements[i]->buf = (char *)calloc(2, sizeof(char));
         nouveau->elements[i]->buf[0] = 'E';
         nouveau->elements[i]->buf[1] = '\0';
-        nouveau->elements[i]->len = 1;
+        nouveau->elements[i]->len = 2;
         nouveau->elements[i]->timestamp = 0;
     }
     return nouveau;
@@ -36,7 +36,6 @@ void print_storage() {
                   msg_store->elements[i]->hash, msg_store->elements[i]->timestamp);
         fwrite(msg_store->elements[i]->buf, sizeof(char),
                msg_store->elements[i]->len, stdout);
-        fflush(stdout);
         printf("\n");
     }
     fflush(stdout);

@@ -7,8 +7,11 @@
 #include <pthread.h>
 
 #define MAX_ELEMENTS 10
-#define MAX_MESSAGE_SIZE 4096
 
+/**
+ * @brief Clipboard storage element.
+ * @see storage
+ */
 typedef struct element {
     char *buf;
     size_t len;
@@ -16,6 +19,10 @@ typedef struct element {
     unsigned long hash;
 } element_t;
 
+/**
+ * @brief Clipboard Storage containing MAX_ELEMENTS.
+ * @see element
+ */
 typedef struct storage {
     element_t **elements;
 } storage_t;
