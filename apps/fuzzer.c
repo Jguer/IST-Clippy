@@ -1,3 +1,8 @@
+/*
+Esta app cria conjuntos de caracteres random inclusive '\0' e '\n' de tamanho variavél até 6100 carctere maximo, e depois envia esta mensagem para o clipboard para um região random.
+*/
+
+
 #include "../library/clipboard.h"
 #include "../utils/log.h"
 #include <stdio.h>

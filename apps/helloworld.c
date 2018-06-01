@@ -1,3 +1,7 @@
+/*
+Copia tres strings diferentes para 3 regioes diferentes
+*/
+
 #include "../library/clipboard.h"
 
 int main(int argc, char const *argv[]) {

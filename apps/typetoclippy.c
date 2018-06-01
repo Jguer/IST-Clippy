@@ -7,7 +7,10 @@ int main(int argc, char const *argv[]) {
 
     while (1) {
         char buf[4096];
-        fgets(buf, 4096, stdin);
+        if(NULL==fgets(buf, 4096, stdin))
+        {
+        	return 1;
+        }
         buf[strlen(buf) - 1] = '\0';
 
         if (strstr(buf, "exit") != NULL) {

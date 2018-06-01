@@ -1,3 +1,8 @@
+/*
+Semlhante a aplicação fuzzer mas com mensagens mais pequnas no maximo 150 caracteres.
+*/
+
+
 #include "../library/clipboard.h"
 #include "../utils/log.h"
 #include <stdio.h>
