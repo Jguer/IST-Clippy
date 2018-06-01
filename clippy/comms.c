@@ -259,11 +259,13 @@ int create_local_socket() {
         exit(EXIT_FAILURE);
     }
 
-    unlink(SOCK_PATH);
+    const char *socket_path = (dir == NULL) ? SOCK_PATH : dir;
+
+    unlink(socket_path);
 
     // type of socket created
     address.sun_family = AF_UNIX;
-    strcpy(address.sun_path, SOCK_PATH);
+    strcpy(address.sun_path, socket_path);
 
     size_t len = strlen(address.sun_path) + sizeof(address.sun_family);
 
@@ -273,7 +275,7 @@ int create_local_socket() {
         return -1;
     }
 
-    log_info("Listener on path %s", SOCK_PATH);
+    log_info("Listener on path %s", socket_path);
 
     if (listen(server_socket, 5) < 0) {
         close(server_socket);

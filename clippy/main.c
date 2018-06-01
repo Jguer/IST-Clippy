@@ -138,24 +138,24 @@ serverexit:
 
 int main(int argc, const char *argv[]) {
     for (int i = 1; i < argc; i++) {
-        printf("Treating i:%d %s\n", i, argv[i]);
         if (strcmp(argv[i], "-h") == 0) {
             usage(argv[0]);
             return EXIT_SUCCESS;
         } else if (strcmp(argv[i], "-c") == 0) {
-            if (argc < i + 2) {
+            if (argc > i + 2) {
                 ip = argv[i + 1];
                 portno = argv[i + 2];
                 log_info("IP: %s PORT: %s", ip, portno);
-                i = i + 3;
+                i = i + 2;
             } else {
                 usage(argv[0]);
                 return EXIT_FAILURE;
             }
         } else if (strcmp(argv[i], "-d") == 0) {
-            if (argc < i + 1) {
+            if (argc > i + 1) {
                 dir = argv[i + 1];
-                i = i + 2;
+                log_info("DIR: %s", dir);
+                i = i + 1;
             }
 
         } else {
