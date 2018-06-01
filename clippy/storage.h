@@ -1,16 +1,10 @@
 #ifndef STORAGE_H
 #define STORAGE_H
 
+#include "../library/clipboard.h"
 #include "../utils/list.h"
-#include "../utils/log.h"
 
 #include <pthread.h>
-#include <stdbool.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-
-#include "../library/clipboard.h"
 
 #define MAX_ELEMENTS 10
 #define MAX_MESSAGE_SIZE 4096

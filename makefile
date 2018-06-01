@@ -30,22 +30,27 @@ xtypetoclippy: apps/typetoclippy.c clipboard.o log.o
 	$(CC) $(CFLAGS) -o xtypetoclippy apps/typetoclippy.c clipboard.o log.o $(LFLAGS)
 
 # Server
-clippy:clippy/main.c clippy/comms.c clippy/comms.h \
-	clippy/storage.c clippy/storage.h \
-	log.o list.o clipboard.o
-	$(CC) $(CFLAGS) -o xclippy clippy/main.c clippy/comms.c clippy/comms.h \
-	clippy/storage.c clippy/storage.h \
-	log.o list.o clipboard.o $(LFLAGS) -lpthread
+clippy: main.o storage.o comms.o log.o list.o clipboard.o
+	$(CC) $(CFLAGS) -o xclippy main.o storage.o comms.o \
+		log.o list.o clipboard.o $(LFLAGS) -lpthread
 
 
 # Dependencies
+main.o : clippy/main.c
+	$(CC) $(CFLAGS) -c clippy/main.c
+storage.o : clippy/storage.c clippy/storage.h
+	$(CC) $(CFLAGS) -c clippy/storage.c clippy/storage.h
+comms.o : clippy/comms.c clippy/comms.h
+	$(CC) $(CFLAGS) -c clippy/comms.c clippy/comms.h
 clipboard.o : library/clipboard.c library/clipboard.h
-	$(CC) $(CFLAGS) -c library/clipboard.c library/clipboard.h $(LFLAGS)
+	$(CC) $(CFLAGS) -c library/clipboard.c library/clipboard.h
 log.o : utils/log.c utils/log.h
-	$(CC) $(CFLAGS) -c utils/log.c utils/log.h -DLOG_USE_COLOR $(LFLAGS)
+	$(CC) $(CFLAGS) -c utils/log.c utils/log.h -DLOG_USE_COLOR
 list.o : utils/list.c utils/list.h
-	$(CC) $(CFLAGS) -c utils/list.c utils/list.h $(LFLAGS)
+	$(CC) $(CFLAGS) -c utils/list.c utils/list.h
 
 clean :
 	-rm -f *.o
 	-rm -f x*
+	-rm -f clippy/*.ghc
+	-rm -f library/*.ghc

@@ -3,17 +3,27 @@
 #define N_ARGS 4
 
 void usage(const char *name) { //_Verbose_OPT_* are debug only variables
-    fprintf(stdout, "Example Usage: %s -c [ip] [port]\n", name);
+    fprintf(stdout, "Example Usage: %s -c [ip] [port] -d [clipboard dir]\n",
+            name);
     fprintf(stdout, "Arguments:\n"
-            "\t-c\t\t[server ip]\n"
-            "\t\t\t[server port]\n");
+            "\t-c\t[server ip]"
+            " [server port]\n"
+            "\t-d\t[clipboard dir]\n");
 }
 
+/**
+ * @brief Worker Arguments for accept_client.
+ * @see accept_client
+ *
+ */
 typedef struct worker_arguments {
-    int fd;
-    bool remote;
+    int fd;      /**< socket file descriptor. */
+    bool remote; /**< is remote socket */
 } wa_t;
 
+/**
+ * @brief Initialize sockets and handle incoming connections.
+ */
 void start_service(void) {
     pthread_t worker_thread;
 
@@ -127,12 +137,28 @@ serverexit:
 }
 
 int main(int argc, const char *argv[]) {
-    if (argc > 3) {
-        if (strcmp(argv[1], "-c") == 0) {
-            ip = argv[2];
-            portno = argv[3];
-            log_info("IP: %s PORT: %s", ip, portno);
-        } else if (strcmp(argv[1], "-h") == 0) {
+    for (int i = 1; i < argc; i++) {
+        printf("Treating i:%d %s\n", i, argv[i]);
+        if (strcmp(argv[i], "-h") == 0) {
+            usage(argv[0]);
+            return EXIT_SUCCESS;
+        } else if (strcmp(argv[i], "-c") == 0) {
+            if (argc < i + 2) {
+                ip = argv[i + 1];
+                portno = argv[i + 2];
+                log_info("IP: %s PORT: %s", ip, portno);
+                i = i + 3;
+            } else {
+                usage(argv[0]);
+                return EXIT_FAILURE;
+            }
+        } else if (strcmp(argv[i], "-d") == 0) {
+            if (argc < i + 1) {
+                dir = argv[i + 1];
+                i = i + 2;
+            }
+
+        } else {
             usage(argv[0]);
             return EXIT_FAILURE;
         }
