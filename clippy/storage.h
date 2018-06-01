@@ -19,7 +19,7 @@ typedef struct element {
     char *buf;
     size_t len;
     unsigned long timestamp;
-    int hash;
+    unsigned long hash;
 } element_t;
 
 typedef struct storage {

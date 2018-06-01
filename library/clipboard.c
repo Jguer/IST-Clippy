@@ -2,15 +2,26 @@
 
 #define UNIX_PATH_MAX 108
 
-int ht_hash(char *s, int len_s) {
-    int a = 151;
-    int m = 53;
-    long hash = 0;
+/* int ht_hash(char *s, int len_s) { */
+/*     int a = 151; */
+/*     int m = 53; */
+/*     long hash = 0; */
+/*     for (int i = 0; i < len_s; i++) { */
+/*         hash += (long)pow(a, len_s - (i + 1)) * s[i]; */
+/*         hash = hash % m; */
+/*     } */
+/*     return (int)hash; */
+/* } */
+
+unsigned long ht_hash(char const *s, size_t len_s) {
+    unsigned long hash = 5381;
+
     for (int i = 0; i < len_s; i++) {
-        hash += (long)pow(a, len_s - (i + 1)) * s[i];
-        hash = hash % m;
+        unsigned long c = s[i];
+        hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
     }
-    return (int)hash;
+
+    return hash;
 }
 
 int clipboard_connect(char *clipboard_dir) {
@@ -46,7 +57,8 @@ int clipboard_copy(int clipboard_id, int region, void *buf, size_t count) {
     header.timestamp = time(NULL);
     int nbytes;
 
-    /* log_info("Header Information\tOP: %d\tRegion: %d\tData_size:%d", header.op,
+    /* log_info("Header Information\tOP: %d\tRegion: %d\tData_size:%d",
+     * header.op,
      */
     /*          header.region, header.data_size); */
     if (send(clipboard_id, &header, sizeof(header_t), 0) < sizeof(header_t)) {

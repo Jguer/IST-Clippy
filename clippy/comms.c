@@ -58,7 +58,7 @@ void *accept_client(void *args) {
                 log_error("sd:%d Received shorter message than expected", wa->fd);
             }
 
-            int calc_hash = ht_hash(buf, header.data_size);
+            unsigned long calc_hash = ht_hash(buf, header.data_size);
             if (calc_hash != header.hash) {
                 log_error("sd:%d Hash does not correspond to header", wa->fd);
                 header.hash = calc_hash;
