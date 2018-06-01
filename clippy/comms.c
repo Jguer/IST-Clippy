@@ -1,5 +1,4 @@
 #include "comms.h"
-#define STDIN 0
 
 void *accept_client(void *args) {
     wa_t *wa = (wa_t *)args;

@@ -1,7 +1,5 @@
 #include "comms.h"
 
-#define N_ARGS 4
-
 void usage(const char *name) { //_Verbose_OPT_* are debug only variables
     fprintf(stdout, "Example Usage: %s -c [ip] [port] -d [clipboard dir]\n",
             name);

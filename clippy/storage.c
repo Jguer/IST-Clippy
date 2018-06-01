@@ -41,7 +41,7 @@ void print_storage() {
     fflush(stdout);
 }
 
-int put_message(int region, unsigned long timestamp, int hash, size_t len,
+int put_message(int region, unsigned long timestamp, unsigned long hash, size_t len,
                 char *buf) {
     if (region > MAX_ELEMENTS - 1) {
         log_error("Naughty tried to put message in excess position");
