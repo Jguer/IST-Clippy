@@ -3,13 +3,12 @@
 #include "../library/clipboard.h"
 
 int main(int argc, char const *argv[]) {
-    int clipboard_id = clipboard_connect("/tmp/CLIPBOARD_SOCKET");
+    int clipboard_id = clipboard_connect("./CLIPBOARD_SOCKET");
 
     while (1) {
         char buf[4096];
-        if(NULL==fgets(buf, 4096, stdin))
-        {
-        	return 1;
+        if (NULL == fgets(buf, 4096, stdin)) {
+            return 1;
         }
         buf[strlen(buf) - 1] = '\0';
 

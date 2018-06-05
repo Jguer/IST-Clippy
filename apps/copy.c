@@ -15,7 +15,7 @@ int main(int argc, char const *argv[]) {
 
     int clipboard_id = clipboard_connect("./CLIPBOARD_SOCKET");
 
-    clipboard_wait(clipboard_id, region, buf, strlen(buf) + 1);
+    clipboard_copy(clipboard_id, region, buf, strlen(buf) + 1);
     /* fwrite(buf, sizeof(char), 4096, stdin); */
 
     clipboard_close(clipboard_id);

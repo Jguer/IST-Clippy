@@ -10,13 +10,13 @@ int main(int argc, char const *argv[]) {
         return 1;
     }
 
-    char buf[4096];
+    char *buf = calloc(sizeof(char), 4096);
     int region = atoi(argv[1]);
 
     int clipboard_id = clipboard_connect("./CLIPBOARD_SOCKET");
 
     clipboard_wait(clipboard_id, region, buf, 4096);
-    fwrite(buf, sizeof(char), 4096, stdin);
+    fwrite(buf, sizeof(char), 4096, stdout);
 
     clipboard_close(clipboard_id);
     return 0;
