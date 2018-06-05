@@ -16,7 +16,7 @@
 /**
  * @brief Default local socket location
  */
-#define SOCK_PATH "/tmp/CLIPBOARD_SOCKET"
+#define SOCK_PATH "./CLIPBOARD_SOCKET"
 
 /**
  * @brief Port number for sync clipboard.
