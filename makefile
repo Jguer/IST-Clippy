@@ -1,4 +1,4 @@
-.PHONY: default all clean test
+.PHONY: default all clean test apps server
 CC = gcc
 # CFLAGS = -std=gnu11 -g -Wall -Wextra -Wundef \
 #								-Wshadow -Wfloat-equal -Wpointer-arith \
@@ -14,10 +14,16 @@ CFLAGS = -std=gnu11 -O2 -Os
 default: apps server
 all: default
 
-apps: xhelloworld xtestwait xfuzzer xminifuzzer xtypetoclippy
+apps: xhelloworld xtestwait xfuzzer xminifuzzer xtypetoclippy xcopy xpaste xwait
 server: clippy
-
 # Apps
+xcopy: apps/copy.c clipboard.o
+	$(CC) $(CFLAGS) -o xcopy apps/copy.c clipboard.o $(LFLAGS)
+xpaste: apps/paste.c clipboard.o
+	$(CC) $(CFLAGS) -o xpaste apps/paste.c clipboard.o $(LFLAGS)
+xwait: apps/wait.c clipboard.o
+	$(CC) $(CFLAGS) -o xwait apps/wait.c clipboard.o $(LFLAGS)
+
 xhelloworld: apps/helloworld.c clipboard.o
 	$(CC) $(CFLAGS) -o xhelloworld apps/helloworld.c clipboard.o $(LFLAGS)
 xtestwait: apps/testwait.c clipboard.o
