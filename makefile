@@ -56,5 +56,5 @@ docs :
 clean :
 	-rm -f *.o
 	-rm -f x*
-	-rm -f clippy/*.ghc
-	-rm -f library/*.ghc
+	-rm -f clippy/*.gch
+	-rm -f library/*.gch
