@@ -5,11 +5,12 @@
 int main(int argc, char const *argv[]) {
     int clipboard_id = clipboard_connect("./CLIPBOARD_SOCKET");
     int size, region = 0;
-
+    int nbytes = 0;
+    char *buf = calloc(sizeof(char), 4096);
     while (1) {
-        char buf[4096];
-        printf(
-            "What type of function do you require? P(paste),C(copy) and W(wait)\n");
+        printf("What type of function do you require? P(paste),C(copy) and "
+               "W(wait)\n");
+        fflush(stdout);
 
         if (NULL == fgets(buf, 4096, stdin)) {
             return -1;
@@ -29,7 +30,8 @@ int main(int argc, char const *argv[]) {
                 printf("Wrong arguments\n");
                 break;
             }
-            clipboard_paste(clipboard_id, region, buf, size);
+            nbytes = clipboard_paste(clipboard_id, region, buf, size);
+            printf("Return code: %d\n", nbytes);
             puts(buf);
         } else if (strstr(buf, "C") != NULL) {
             printf("Write a message to copied into the clipboard\n");
@@ -46,9 +48,10 @@ int main(int argc, char const *argv[]) {
                 printf("Wrong arguments\n");
                 break;
             }
-            clipboard_copy(clipboard_id, region, buf, size);
+            nbytes = clipboard_copy(clipboard_id, region, buf, size);
+            printf("Return code: %d\n", nbytes);
         } else if (strstr(buf, "W") != NULL) {
-            printf("From wich region do you want to paste?\n");
+            printf("From which region do you want to paste?\n");
             if (scanf("%d", &region) < 0) {
                 printf("Wrong arguments\n");
                 break;
@@ -58,9 +61,11 @@ int main(int argc, char const *argv[]) {
                 printf("Wrong arguments\n");
                 break;
             }
-            clipboard_wait(clipboard_id, region, buf, size);
+            nbytes = clipboard_wait(clipboard_id, region, buf, size);
+            printf("Return code: %d\n", nbytes);
             puts(buf);
         }
+        memset(buf, 0, 4096);
     }
     clipboard_close(clipboard_id);
 }
