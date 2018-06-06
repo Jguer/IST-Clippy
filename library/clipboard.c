@@ -57,6 +57,9 @@ int clipboard_copy(int clipboard_id, int region, void *buf, size_t count) {
     header.timestamp = time(NULL);
     int nbytes;
 
+    if (count < 1) {
+        return 0;
+    }
     /* log_info("Header Information\tOP: %d\tRegion: %d\tData_size:%d",
      * header.op,
      */
@@ -78,6 +81,10 @@ int clipboard_copy(int clipboard_id, int region, void *buf, size_t count) {
 int clipboard_pasta(int clipboard_id, void *buf, header_t header) {
     ssize_t nbytes;
     int count = header.data_size;
+    if (count < 1) {
+        return 0;
+    }
+
     if (send(clipboard_id, &header, sizeof(header_t), 0) < sizeof(header_t)) {
         /* log_warn("Failed to send(): %s with %s", buf, strerror(errno)); */
         return 0;

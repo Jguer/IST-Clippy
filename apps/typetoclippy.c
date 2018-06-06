@@ -7,9 +7,10 @@ int main(int argc, char const *argv[]) {
     int size, region = 0;
     int nbytes = 0;
     char *buf = calloc(sizeof(char), 4096);
+
+    printf("What type of function do you require? P(paste),C(copy) and "
+           "W(wait)\n");
     while (1) {
-        printf("What type of function do you require? P(paste),C(copy) and "
-               "W(wait)\n");
         fflush(stdout);
 
         if (NULL == fgets(buf, 4096, stdin)) {
@@ -66,6 +67,8 @@ int main(int argc, char const *argv[]) {
             puts(buf);
         }
         memset(buf, 0, 4096);
+        printf("What type of function do you require? P(paste),C(copy) and "
+               "W(wait)\n");
     }
     clipboard_close(clipboard_id);
 }
