@@ -33,7 +33,9 @@ int main(int argc, char const *argv[]) {
             }
             nbytes = clipboard_paste(clipboard_id, region, buf, size);
             printf("Return code: %d\n", nbytes);
-            puts(buf);
+            fwrite(buf, sizeof(char), 4096, stdout);
+            printf("\n");
+            /* puts(buf); */
         } else if (strstr(buf, "C") != NULL) {
             printf("Write a message to copied into the clipboard\n");
             if (NULL == fgets(buf, 4096, stdin)) {
@@ -64,7 +66,9 @@ int main(int argc, char const *argv[]) {
             }
             nbytes = clipboard_wait(clipboard_id, region, buf, size);
             printf("Return code: %d\n", nbytes);
-            puts(buf);
+            fwrite(buf, sizeof(char), 4096, stdout);
+            printf("\n");
+            /* puts(buf); */
         }
         memset(buf, 0, 4096);
         printf("What type of function do you require? P(paste),C(copy) and "
