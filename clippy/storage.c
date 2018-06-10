@@ -3,14 +3,24 @@
 storage_t *new_storage() {
     storage_t *nouveau = (storage_t *)malloc(sizeof(storage_t));
     if (nouveau == NULL) {
-        log_fatal("Unable to malloc storage_t");
         return NULL;
     }
 
     nouveau->elements = (element_t **)malloc(sizeof(element_t *) * MAX_ELEMENTS);
+    if (nouveau->elements == NULL) {
+        return NULL;
+    }
+
     for (int i = 0; i < MAX_ELEMENTS; i++) {
         nouveau->elements[i] = (element_t *)malloc(sizeof(element_t));
+        if (nouveau->elements[i] == NULL) {
+            return NULL;
+        }
         nouveau->elements[i]->buf = (char *)calloc(2, sizeof(char));
+        if (nouveau->elements[i]->buf == NULL) {
+            return NULL;
+        }
+
         nouveau->elements[i]->buf[0] = 'E';
         nouveau->elements[i]->buf[1] = '\0';
         nouveau->elements[i]->len = 2;
@@ -55,12 +65,14 @@ int put_message(int region, unsigned long timestamp, unsigned long hash,
         msg_store->elements[region]->timestamp = timestamp;
         msg_store->elements[region]->hash = hash;
         free(msg_store->elements[region]->buf);
-        msg_store->elements[region]->buf = malloc(len);
-        memcpy(msg_store->elements[region]->buf, buf, len);
+        msg_store->elements[region]->buf = buf;
         msg_store->elements[region]->len = len;
         log_trace("New Element[%d] Value=\"%s\"", region,
                   msg_store->elements[region]->buf);
+    } else {
+        free(buf);
     }
+
     pthread_cond_broadcast(&c[region]);
     pthread_mutex_unlock(&m[region]);
 

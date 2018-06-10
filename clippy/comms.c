@@ -10,7 +10,7 @@ void *accept_client(void *args) {
     unsigned long timestamp;
 
     while (true) {
-        int nbytes = recv(wa->fd, &header, sizeof(header_t), MSG_WAITALL);
+        ssize_t nbytes = recv(wa->fd, &header, sizeof(header_t), MSG_WAITALL);
         if (nbytes == 0) {
             log_info("socket %d disconnected", wa->fd);
             break;
@@ -47,6 +47,9 @@ void *accept_client(void *args) {
             /* } */
 
             char *buf = malloc(header.data_size + 1);
+            if (buf == NULL) {
+                return NULL;
+            }
             nbytes = recv(wa->fd, buf, header.data_size, MSG_WAITALL);
             if (nbytes < header.data_size) {
                 log_error("sd:%d Received shorter message than expected", wa->fd);
@@ -66,7 +69,7 @@ void *accept_client(void *args) {
             pthread_mutex_lock(&remote_connections_mutex);
             list_each_elem(remote_connections, elem) {
                 if (*elem != wa->fd) {
-                    int nsent =
+                    ssize_t nsent =
                         clipboard_copy(*elem, header.region, buf, header.data_size);
                     if (nsent != header.data_size) {
                         log_error("Clipboard %d failed to receive sync", *elem);
@@ -75,7 +78,6 @@ void *accept_client(void *args) {
                 }
             }
             pthread_mutex_unlock(&remote_connections_mutex);
-            free(buf);
         } else if (header.op == PASTE || header.op == WAIT) {
             if (header.region > MAX_ELEMENTS - 1 || header.region < 0) {
                 if ((nbytes = clipboard_copy(wa->fd, 0, " ", 1)) != 1) {

@@ -35,6 +35,11 @@ void start_service(void) {
         list_push(remote_connections, sync_socket);
         pthread_mutex_unlock(&remote_connections_mutex);
         wa_t *wa = (wa_t *)malloc(sizeof(wa_t));
+        if (wa == NULL) {
+            log_fatal("Unable to allocate memory for worker_arguments");
+            return;
+        }
+
         wa->fd = sync_socket;
         wa->remote = true;
         if (pthread_create(&worker_thread, NULL, accept_client, wa) != 0) {
@@ -88,6 +93,11 @@ void start_service(void) {
                     pthread_mutex_unlock(&local_connections_mutex);
 
                     wa_t *wa = (wa_t *)malloc(sizeof(wa_t));
+                    if (wa == NULL) {
+                        log_fatal("Unable to allocate memory for worker_arguments");
+                        return;
+                    }
+
                     wa->fd = client_socket;
                     wa->remote = false;
                     if (pthread_create(&worker_thread, NULL, accept_client, wa) != 0) {
@@ -109,6 +119,11 @@ void start_service(void) {
                     pthread_mutex_unlock(&remote_connections_mutex);
 
                     wa_t *wa = (wa_t *)malloc(sizeof(wa_t));
+                    if (wa == NULL) {
+                        log_fatal("Unable to allocate memory for worker_arguments");
+                        return;
+                    }
+
                     wa->fd = client_socket;
                     wa->remote = true;
                     if (pthread_create(&worker_thread, NULL, accept_client, wa) != 0) {
@@ -153,6 +168,10 @@ int main(int argc, const char *argv[]) {
     }
 
     msg_store = new_storage();
+    if (msg_store == NULL) {
+        log_fatal("Unable to malloc storage_t");
+        return 1;
+    }
 
     pthread_mutex_init(&remote_connections_mutex, NULL);
     pthread_mutex_init(&local_connections_mutex, NULL);

@@ -80,7 +80,7 @@ int clipboard_copy(int clipboard_id, int region, void *buf, size_t count) {
 
 int clipboard_pasta(int clipboard_id, void *buf, header_t header) {
     ssize_t nbytes;
-    int count = header.data_size;
+    size_t count = header.data_size;
     if (count < 1) {
         return 0;
     }
@@ -96,13 +96,16 @@ int clipboard_pasta(int clipboard_id, void *buf, header_t header) {
     }
 
     void *rbuf = malloc(header.data_size);
-
-    nbytes = recv(clipboard_id, rbuf, header.data_size, MSG_WAITALL);
-    if (nbytes == 0 || nbytes == -1 || nbytes != header.data_size) {
+    if (rbuf == NULL) {
         return 0;
     }
 
-    int data_size = (header.data_size > count) ? count : header.data_size;
+    nbytes = recv(clipboard_id, rbuf, header.data_size, MSG_WAITALL);
+    if (nbytes == 0 || nbytes == -1 || nbytes != (ssize_t)header.data_size) {
+        return 0;
+    }
+
+    size_t data_size = (header.data_size > count) ? count : header.data_size;
     memcpy(buf, rbuf, data_size);
 
     free(rbuf);
